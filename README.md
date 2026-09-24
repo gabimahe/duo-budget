@@ -1,4 +1,4 @@
-# Dúo · tu budget personal
+# Dúo · Un bugdet de parejas
 
 Una base minimalista para administrar los gastos de un hogar de dos personas. Cada instalación funciona en la cuenta Google de quien la instala, con su propia planilla y su propio enlace.
 
