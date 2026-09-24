@@ -1,0 +1,14 @@
+# Autorizaciones locales y secretos
+.clasp.json
+.clasprc.json
+.clasprc.*.json
+.env
+.env.*
+!.env.example
+credentials*.json
+
+# Dependencias y archivos temporales
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

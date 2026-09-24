@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <style>
+      :root { color-scheme: light; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #34283f; background: #f7f5fa; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      .page { width: min(100% - 40px, 960px); margin: 0 auto; }
+      header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 28px 0; border-bottom: 1px solid #e4ddec; }
+      .brand { font-size: 30px; font-weight: 750; letter-spacing: -1.5px; }
+      .people { font-size: 14px; color: #6a5d76; }
+      main { padding: 64px 0 48px; }
+      .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+      h1 { max-width: 680px; margin: 16px 0 20px; font-size: clamp(36px, 7vw, 64px); line-height: 1.08; letter-spacing: -1.8px; }
+      .intro { max-width: 480px; color: #6a5d76; font-size: 18px; line-height: 1.7; }
+      .home { margin-top: 40px; padding: 28px; border: 1px solid #e4ddec; border-radius: 24px; background: #fff; }
+      .tag { display: inline-block; padding: 7px 12px; border-radius: 100px; background: #eee7f5; font-size: 12px; font-weight: 650; }
+      h2 { font-size: 24px; margin: 22px 0 10px; letter-spacing: -.5px; }
+      .home p { margin: 0; max-width: 540px; line-height: 1.7; color: #6a5d76; }
+      .coming { margin-top: 24px !important; padding-top: 20px; border-top: 1px solid #eee9f3; font-size: 14px; }
+      footer { padding: 24px 0; color: #6a5d76; font-size: 13px; }
+      main { padding-top: 32px; }
+      h1 { font-size: clamp(32px, 6vw, 44px); }
+      form { max-width: 600px; }
+      .field { display: grid; gap: 8px; margin-bottom: 20px; }
+      input, select, textarea, button { font: inherit; min-height: 48px; border-radius: 12px; }
+      input, select, textarea { width: 100%; min-width: 0; border: 1px solid #a89ab5; padding: 12px; background: white; color: #34283f; }
+      textarea { resize: vertical; }
+      fieldset { margin: 0 0 20px; padding: 0; border: 0; min-width: 0; }
+      legend { margin-bottom: 10px; }
+      .choices { display: flex; gap: 8px; flex-wrap: wrap; }
+      .choices label { flex: 1; cursor: pointer; }
+      .choices input { position: absolute; opacity: 0; width: 1px; min-height: 0; }
+      .choices span { display: block; text-align: center; border: 1px solid #a89ab5; border-radius: 12px; padding: 14px 10px; white-space: nowrap; }
+      .choices input:checked + span { background: #34283f; color: white; border-color: #34283f; }
+      :focus-visible, .choices input:focus-visible + span { outline: 3px solid #795197; outline-offset: 3px; }
+      button { border: 0; background: #34283f; color: white; padding: 12px 24px; width: 100%; cursor: pointer; }
+      button:disabled { opacity: .6; cursor: wait; }
+      .hint { font-size: 13px; color: #6a5d76; }
+      #mensaje { line-height: 1.6; margin-top: 16px; }
+      #mensaje.error { color: #a12626; }
+      [hidden] { display: none !important; }
+      nav { display: flex; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+      nav button { padding: 12px 16px; }
+      .personas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; margin: 20px 0; }
+      .saldo { background: #eee7f5; padding: 24px; border-radius: 18px; overflow-wrap: anywhere; }
+      .saldo strong { display: block; font-size: clamp(28px, 5vw, 40px); margin-top: 12px; }
+      #lista-transferencias { list-style: none; padding: 0; display: grid; gap: 12px; }
+      nav button { width: auto; background: transparent; border: 1px solid #a89ab5; color: #34283f; }
+      nav button[aria-pressed="true"] { background: #34283f; color: white; }
+      .filtro { display: grid; grid-template-columns: minmax(0, 230px) max-content; gap: 12px; align-items: end; margin-bottom: 24px; }
+      .filtro .field { margin: 0; min-width: 0; }
+      .filtro button { width: auto; }
+      #lista-gastos { list-style: none; padding: 0; display: grid; gap: 16px; }
+      .movimiento { padding: 20px; border-radius: 18px; border: 1px solid #e4ddec; background: white; overflow-wrap: anywhere; }
+      .movimiento h2 { font-size: 18px; margin: 0; }
+      .movimiento .cabecera { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      .movimiento p { line-height: 1.6; margin: 10px 0 0; }
+      .movimiento summary { cursor: pointer; padding: 14px 0; }
+      .comentario { white-space: pre-wrap; }
+      @media (min-width: 700px) { main { padding-top: 88px; } .home { padding: 36px; } }
+      @media (max-width: 360px) { .page { width: calc(100% - 32px); } .home { padding: 20px; } .people { font-size: 12px; } }
+      main { padding-top: 28px; }
+      .dashboard { display: grid; gap: 18px; }
+      .dashboard > * { min-width: 0; }
+      .panel { background: white; border: 1px solid #e4ddec; border-radius: 20px; padding: 22px; overflow-wrap: anywhere; }
+      .panel h2 { font-size: 18px; margin: 0 0 18px; }
+      .total-mes { display: block; font-size: clamp(26px, 5vw, 38px); letter-spacing: -1px; }
+      .panel-balance { background: #eee7f5; }
+      .deudas { display: grid; gap: 14px; margin-bottom: 20px; }
+      .deudas p { margin: 0; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .lista-resumen { list-style: none; padding: 0; margin: 0; }
+      .lista-resumen li + li { border-top: 1px solid #eee9f3; margin-top: 16px; padding-top: 16px; }
+      .fila-resumen { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .lista-resumen p { margin: 6px 0; }
+      .barra { height: 6px; background: #eee9f3; border-radius: 6px; margin-top: 10px; overflow: hidden; }
+      .barra span { display: block; height: 100%; background: #9474ad; }
+      .acciones-inicio { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+      .acciones-inicio h1 { margin: 0; }
+      .acciones-inicio button { width: auto; }
+      .secundario { background: transparent; color: #34283f; border: 1px solid #a89ab5; }
+      .panel .secundario { margin-top: 18px; }
+      @media (min-width: 700px) { .dashboard { grid-template-columns: 1fr 1fr; } }
+      @media (max-width: 450px) { nav { gap: 4px; } nav button { padding: 10px; flex: 1; font-size: 13px; } .panel { padding: 18px; } }
+      .balance-detalle { border-bottom: 1px solid #e4ddec; padding: 8px 0; }
+      .balance-detalle > summary { cursor: pointer; padding: 16px 4px; font-weight: 600; min-height: 48px; }
+      .balance-detalle .field { max-width: 280px; margin-top: 16px; }
+      .balance-detalle .personas { margin: 12px 0; }
+      .balance-detalle .movimiento p { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+      #abrir-pago { margin: 18px 0; width: auto; }
+      #formulario-pago { margin: 0 0 24px; }
+      #lista-fijos { list-style: none; padding: 0; display: grid; gap: 12px; }
+      #lista-fijos button { width: auto; margin-top: 12px; }
+      .vencido { color: #994924; }
+      dialog { border: 1px solid #e4ddec; border-radius: 20px; padding: 24px; width: min(560px, calc(100% - 24px)); max-height: 90dvh; color: #34283f; }
+      dialog::backdrop { background: #30223f70; }
+      dialog h2 { margin-top: 0; }
+      dialog .secundario { margin-top: 12px; }
+      /* Estilos compartidos: lavanda y ciruela y una acción principal por vista. */
+      :root { background: #f7f5fa; color: #34283f; --acento: #705087; --borde: #e4ddec; }
+      body { line-height: 1.5; }
+      .page { width: min(100% - 36px, 1240px); }
+      header { padding: 20px 0; border-color: var(--borde); }
+      .brand { font-size: 34px; letter-spacing: -2px; }
+      .people { background: #eee7f5; padding: 7px 13px; border-radius: 24px; font-size: 12px; }
+      main { padding: 28px 0; }
+      .eyebrow { color: #6a5d76; font-size: 10px; letter-spacing: 1.8px; margin-bottom: 12px; }
+      h1 { font-size: clamp(28px, 4vw, 36px); letter-spacing: -1.1px; margin-top: 0; font-weight: 650; }
+      h2 { font-weight: 600; }
+      button { background: var(--acento); border-radius: 12px; font-size: 14px; font-weight: 550; transition: background .15s ease; }
+      button:hover:not(:disabled) { background: #593b70; color: white; }
+      .secundario { border-color: var(--borde); background: #fff; font-weight: 500; }
+      .panel .secundario { border: 0; border-top: 1px solid var(--borde); border-radius: 0; background: transparent; text-align: left; padding: 12px 0 0; }
+      input, select, textarea { border-color: #b8aac6; border-radius: 10px; font-size: 16px; }
+      label, legend { font-size: 14px; }
+      .field { gap: 6px; margin-bottom: 18px; }
+      .hint { color: #6a5d76; line-height: 1.6; }
+      .panel { border-color: var(--borde); border-radius: 18px; box-shadow: 0 4px 20px #38244704; padding: 22px; }
+      .panel h2 { font-size: 14px; color: #6a5d76; letter-spacing: 0; margin-bottom: 16px; }
+      .total-mes { font-size: clamp(25px, 3vw, 34px); font-weight: 650; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+      strong { font-variant-numeric: tabular-nums; }
+      .dashboard { gap: 16px; }
+      #contenido-inicio > article:first-child { background: #eee7f5; border-color: #ded0ec; }
+      #contenido-inicio > article:first-child .total-mes { font-size: clamp(30px, 4vw, 42px); }
+      .panel-balance { background: #fff; }
+      .deudas { gap: 10px; font-size: 14px; margin-bottom: 12px; }
+      .acciones-inicio { margin-bottom: 24px; gap: 12px; }
+      .filtro { align-items: end; margin-bottom: 20px; }
+      input[type="month"], input[type="date"] { display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; min-inline-size: 0; }
+      .filtro label { font-size: 12px; color: #6a5d76; }
+      .filtro button, #actualizar-bienes, #actualizar-balance { background: transparent; border: 0; color: #6a5d76; width: auto; font-size: 13px; }
+      .movimiento { padding: 18px; border-color: var(--borde); border-radius: 14px; }
+      .movimiento h2 { font-size: 16px; }
+      #lista-gastos, #lista-fijos, #lista-transferencias { gap: 10px; }
+      .lista-resumen { font-size: 14px; }
+      .lista-resumen li + li { margin-top: 14px; padding-top: 14px; }
+      .lista-resumen .hint { font-size: 12px; }
+      .barra { height: 5px; }
+      #nuevo > form { background: white; border: 1px solid var(--borde); padding: 22px; border-radius: 18px; }
+      .saldo { background: #eee7f5; border: 1px solid #ded0ec; }
+      .vencido { color: #a34f2d; }
+      dialog { box-shadow: 0 20px 90px #30223f2e; border-color: var(--borde); }
+      dialog form { max-width: none; }
+      .icono { width: 21px; height: 21px; flex-shrink: 0; }
+      nav button { display: flex; align-items: center; gap: 12px; border: 0; color: #6a5d76; font-weight: 500; }
+      nav button[aria-pressed="true"] { background: #e9dff3; color: #593b70; font-weight: 650; }
+      #ir-mas { display: none; }
+      #menu-mas button { display: flex; align-items: center; gap: 12px; text-align: left; margin-top: 10px; }
+      footer { font-size: 12px; }
+      @media (min-width: 1000px) {
+        .page { padding-left: 208px; }
+        header { padding: 26px 0; }
+        header .brand { position: fixed; left: max(32px, calc((100vw - 1240px) / 2 + 22px)); top: 28px; z-index: 4; }
+        header .people { margin-left: auto; }
+        nav { position: fixed; top: 116px; bottom: 24px; left: max(20px, calc((100vw - 1240px) / 2)); width: 184px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 7px; margin: 0; border-right: 1px solid var(--borde); padding-right: 18px; }
+        nav button { width: 100%; padding: 13px; flex: none; font-size: 14px; }
+        #ir-nuevo { order: 7; margin-top: 22px; background: var(--acento); color: white; }
+        #ir-inicio { order: 0; } #ir-historial { order: 1; } #ir-fijos { order: 2; } #ir-balance { order: 3; } #ir-patrimonio { order: 4; }
+        nav::after { content: 'Pequeños gastos, grandes planes.'; order: 9; margin-top: auto; padding: 28px 12px 0; font-size: 12px; color: #756582; line-height: 1.8; }
+        #contenido-inicio { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+        #contenido-inicio > article { grid-column: span 2; }
+        #contenido-inicio > article:nth-child(4), #contenido-inicio > article:nth-child(5) { grid-column: span 3; }
+        #contenido-inicio > article:nth-child(6) { grid-column: span 6; }
+        #contenido-inicio .total-mes { font-size: clamp(24px, 2.5vw, 32px); }
+      }
+      @media (max-width: 999px) {
+        .page { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+        nav { position: fixed; z-index: 10; bottom: 0; left: 0; right: 0; margin: 0; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); background: #fffffff5; border-top: 1px solid var(--borde); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; box-shadow: 0 -4px 24px #38244707; }
+        nav button { flex-direction: column; justify-content: center; gap: 3px; width: 100%; font-size: 11px; padding: 7px 2px; min-height: 52px; border-radius: 12px; }
+        #ir-inicio { order: 0; } #ir-historial { order: 1; } #ir-nuevo { order: 2; background: var(--acento); color: white; } #ir-fijos { order: 3; } #ir-mas { order: 4; display: flex; }
+        nav #ir-balance, nav #ir-patrimonio { display: none; }
+        #menu-mas { margin: auto auto calc(94px + env(safe-area-inset-bottom)); }
+      }
+      @media (max-width: 699px) {
+        #nuevo-desde-inicio { display: none; }
+        .filtro { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+        .filtro button { justify-self: end; padding: 10px 12px; }
+        #contenido-inicio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #contenido-inicio > article { grid-column: span 2; }
+        #contenido-inicio > article:nth-child(2), #contenido-inicio > article:nth-child(3) { grid-column: span 1; padding: 16px; }
+        #contenido-inicio > article:nth-child(2) .total-mes { font-size: 23px; }
+        .deudas p { display: grid; gap: 2px; }
+        .panel h2 { font-size: 13px; }
+        .panel .secundario { font-size: 12px; }
+        .acciones-inicio button { padding: 10px 14px; }
+      }
+      #abrir-menu { display: none; }
+      @media (min-width: 1000px) {
+        .page { padding-left: 0; padding-right: 208px; }
+        header .brand { position: static; }
+        nav { left: auto; right: max(20px, calc((100vw - 1240px) / 2)); border-right: 0; border-left: 1px solid var(--borde); padding-right: 0; padding-left: 18px; overflow-y: auto; }
+      }
+      @media (max-width: 999px) {
+        .page { padding-bottom: env(safe-area-inset-bottom); }
+        main > nav { display: none; }
+        #abrir-menu { display: flex; align-items: center; justify-content: center; width: 48px; padding: 12px; flex-shrink: 0; }
+        header { gap: 12px; }
+        header .people { margin-left: auto; }
+        #menu-mas { position: fixed; inset: 0 0 0 auto; margin: 0; width: min(320px, 90vw); max-width: none; height: 100dvh; max-height: none; border-radius: 20px 0 0 20px; padding: 24px 20px max(24px, env(safe-area-inset-bottom)); }
+        #menu-mas button[aria-pressed="true"] { background: #e9dff3; color: #593b70; font-weight: 650; }
+        #nuevo-desde-inicio { display: block; }
+      }
+      @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+      .puerta { width: min(480px, calc(100% - 36px)); margin: 60px auto; }
+      .puerta button { margin-top: 12px; }
+      .puerta h1 { margin-top: 24px; }
+      #abrir-acceso { width: auto; min-height: 44px; color: #593b70; }
+      #abrir-acceso:hover:not(:disabled) { color: white; }
+      #dialogo-acceso button { margin-top: 12px; }
+      #cuenta-acceso, #correo-puerta, #pendiente-acceso { overflow-wrap: anywhere; }
+      #patrimonio .acciones-inicio { margin-bottom: 10px; }
+      #patrimonio > .hint { margin: 0 0 12px; }
+      .barra-patrimonio { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+      #estado-bienes { margin: 0; font-size: 13px; color: #6a5d76; }
+      #actualizar-bienes { flex-shrink: 0; padding: 10px 12px; }
+      #lista-bienes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+      #lista-bienes .panel { padding: 16px 20px; }
+      .cabecera-bien { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 20px; }
+      #lista-bienes h2 { margin: 0; font-size: 16px; color: #34283f; }
+      .cabecera-bien h2 { flex: 1 1 160px; min-width: 0; }
+      .cabecera-bien strong { font-size: 17px; }
+      #lista-bienes .hint { margin: 6px 0 0; }
+      #lista-bienes .balance-detalle { border-bottom: 0; padding: 0; margin-top: 4px; }
+      #lista-bienes summary { padding: 12px 0; font-size: 13px; }
+      #lista-bienes details[open] summary { border-bottom: 1px solid var(--borde); }
+      #lista-bienes details p { margin: 10px 0; font-size: 14px; }
+      @media (max-width: 699px) { #lista-bienes .panel { padding: 14px 16px; } }
+    </style>
+  </head>
+  <body>
+    <section id="puerta-acceso" class="panel puerta" aria-label="Acceso a Dúo">
+      <span class="brand">dúo.</span><h1>Nuestro espacio</h1>
+      <p id="estado-acceso" role="status" aria-live="polite">Verificando tu cuenta Google…</p><p id="correo-puerta" class="hint"></p>
+      <p class="hint">Dúo es una base para uso personal. Cada persona debe instalarla y autorizarla con su propia cuenta de Google. Durante la configuración inicial, Dúo crea y vincula automáticamente una hoja de cálculo en esa cuenta. Descargar este repositorio no otorga acceso a ninguna aplicación, cuenta ni planilla del autor.</p>
+      <form id="configurar-cuenta" hidden>
+        <div class="field"><label for="nombre-espacio">Nombre del espacio y de la planilla</label><input id="nombre-espacio" maxlength="60" value="Dúo — Mi hogar" required></div>
+        <div class="field"><label for="nombre-persona1">Tu nombre</label><input id="nombre-persona1" maxlength="60" autocomplete="given-name" required></div>
+        <div class="field"><label for="nombre-persona2">Nombre de la otra persona</label><input id="nombre-persona2" maxlength="60" required><span class="hint">Podés registrar los gastos de ambos sin invitarla. La invitación es opcional.</span></div>
+        <button type="submit" id="guardar-cuenta">Crear mi espacio</button>
+      </form>
+      <button id="aceptar-enlace" type="button" hidden>Aceptar invitación</button>
+      <button id="revisar-acceso" type="button" class="secundario">Volver a comprobar acceso</button>
+    </section>
+    <div class="page" id="app-duo" hidden>
+      <header>
+        <span class="brand" aria-label="Dúo">dúo.</span>
+        <button class="people" id="abrir-acceso" type="button" aria-haspopup="dialog">Mi cuenta</button>
+        <button id="abrir-menu" class="secundario" type="button" aria-label="Abrir menú" aria-haspopup="dialog" aria-controls="menu-mas" aria-expanded="false">☰</button>
+      </header>
+      <dialog id="menu-mas" aria-labelledby="titulo-mas"><h2 id="titulo-mas">Nuestro espacio</h2><button id="cerrar-mas" type="button" class="secundario">Cerrar menú</button></dialog>
+      <dialog id="dialogo-acceso" aria-labelledby="titulo-acceso">
+        <h2 id="titulo-acceso">Acceso compartido</h2><p id="cuenta-acceso" class="hint"></p>
+        <div id="admin-acceso" hidden>
+          <p id="resumen-acceso"></p>
+          <button id="crear-invitacion" type="button">Crear invitación</button>
+          <div id="enlace-acceso" hidden><p class="hint">Enlace de un solo uso. Vence en 48 horas. Copialo y envialo por el medio que prefieras.</p><label for="url-invitacion">Enlace privado</label><input id="url-invitacion" readonly><button type="button" id="copiar-invitacion" class="secundario">Copiar enlace</button></div>
+          <div id="solicitud-acceso" hidden><p id="pendiente-acceso"></p><p class="hint">Confirmá que este correo corresponde a la persona invitada. Al aprobar, podrá usar Dúo y editar su planilla de datos.</p><button id="confirmar-invitacion" type="button">Confirmar y dar acceso</button></div>
+          <button id="revocar-invitacion" type="button" class="secundario" hidden>Cancelar invitación</button>
+        </div>
+        <p id="mensaje-acceso" role="status" aria-live="polite"></p><button id="actualizar-acceso" type="button" class="secundario">Actualizar acceso</button><button id="cerrar-acceso" type="button" class="secundario">Cerrar</button>
+      </dialog>
+      <main>
+        <div class="eyebrow">Convivencia</div>
+        <nav aria-label="Secciones"><button id="ir-inicio" type="button" aria-pressed="true" aria-controls="inicio">Inicio</button><button id="ir-nuevo" type="button" aria-pressed="false" aria-controls="nuevo">Nuevo gasto</button><button id="ir-historial" type="button" aria-pressed="false" aria-controls="historial">Historial</button><button id="ir-balance" type="button" aria-pressed="false" aria-controls="balance">Balance</button></nav>
+        <section id="patrimonio" aria-label="Patrimonio" hidden>
+          <div class="acciones-inicio"><h1>Patrimonio</h1><button id="agregar-bien" type="button">+ Agregar compra</button></div>
+          <p class="hint">Las cosas de nuestro hogar. Precios de compra, sin estimar su valor actual.</p>
+          <div class="barra-patrimonio"><p id="estado-bienes" role="status"></p><button id="actualizar-bienes" class="secundario" type="button">Actualizar</button></div>
+          <p id="confirmacion-bien" role="status" hidden></p>
+          <div id="lista-bienes"></div>
+        </section>
+        <dialog id="dialogo-bien" aria-labelledby="titulo-bien">
+          <h2 id="titulo-bien">Agregar compra</h2>
+          <form id="form-bien"><fieldset id="campos-bien">
+            <div class="field"><label for="bien-modo">Cómo agregarla</label><select id="bien-modo" name="modo"><option value="nuevo">Compra nueva</option><option value="existente">Vincular un gasto ya cargado</option></select></div>
+            <div id="bien-vinculo" hidden>
+              <div class="field"><label for="bien-mes">Mes del gasto</label><input id="bien-mes" type="month"></div>
+              <button type="button" id="buscar-bien" class="secundario">Buscar gastos</button>
+              <p id="estado-vinculo" role="status"></p>
+              <div class="field"><label for="bien-movimiento">Gasto existente</label><select id="bien-movimiento" name="movimientoId" disabled></select></div>
+              <p class="hint">El gasto pasará a compras grandes en Inicio. El importe y el balance se conservan.</p>
+            </div>
+            <fieldset id="bien-nuevo">
+              <div class="field"><label for="bien-nombre">Qué compraron</label><input id="bien-nombre" name="descripcion" maxlength="200" required placeholder="Por ejemplo: Heladera"></div>
+              <div class="field"><label for="bien-monto">Precio · ARS</label><input id="bien-monto" name="monto" inputmode="decimal" maxlength="18" required placeholder="$0,00"></div>
+              <div class="field"><label for="bien-fecha">Fecha de compra</label><input id="bien-fecha" name="fecha" type="date" required></div>
+              <div class="field"><label for="bien-pagador">Quién pagó</label><select id="bien-pagador" name="pagador" required><option value="">Elegí una persona</option><option value="persona1" data-etiqueta-persona="persona1">Persona 1</option><option value="persona2" data-etiqueta-persona="persona2">Persona 2</option></select></div>
+              <div class="field"><label for="bien-division">Cómo se divide</label><select id="bien-division" name="division"><option value="mitad">50/50</option><option value="invitacion">Invitación</option><option value="otro">Otro %</option></select></div>
+              <div class="field" id="bien-porcentaje-campo" hidden><label for="bien-porcentaje">Porcentaje de <span data-persona="persona1">Persona 1</span></label><input id="bien-porcentaje" name="porcentajePersona1" type="number" min="0" max="100" step="0.01" value="50" disabled></div>
+            </fieldset>
+            <div class="field"><label for="bien-tipo">Tipo de compra</label><select id="bien-tipo" name="tipo"><option>Electrodomésticos</option><option>Muebles</option><option>Tecnología</option><option>Otros</option></select></div>
+            <details class="balance-detalle"><summary>Más detalles (opcional)</summary>
+              <div class="field"><label for="bien-estado">Estado</label><select id="bien-estado" name="estado"><option>En uso</option><option>Guardado</option><option>Vendido</option><option>Donado</option></select></div>
+              <div class="field"><label for="bien-garantia">Garantía hasta</label><input id="bien-garantia" name="garantia" type="date"></div>
+              <div class="field"><label for="bien-notas">Notas</label><textarea id="bien-notas" name="notas" rows="2" maxlength="500"></textarea></div>
+            </details>
+            <button type="submit">Guardar compra</button><button id="cerrar-bien" class="secundario" type="button">Volver</button>
+          </fieldset></form><p id="mensaje-bien" role="status"></p>
+        </dialog>
+        <section id="fijos" aria-label="Gastos fijos" hidden>
+          <div class="acciones-inicio"><h1>Gastos fijos</h1><button id="agregar-fijo" type="button">+ Agregar</button></div>
+          <div class="filtro"><div class="field"><label for="mes-fijos">Mes de las obligaciones</label><input id="mes-fijos" type="month" required></div><button id="actualizar-fijos" class="secundario" type="button">Actualizar</button></div>
+          <p id="estado-fijos" role="status" aria-live="polite"></p>
+          <ul id="lista-fijos"></ul>
+          <button id="copiar-fijos" type="button" class="secundario">Copiar del mes anterior</button>
+          <p class="hint">Copia las obligaciones como pendientes. Revisá los importes al pagarlas.</p>
+        </section>
+        <dialog id="dialogo-fijo" aria-labelledby="titulo-fijo">
+          <h2 id="titulo-fijo">Agregar gasto fijo</h2>
+          <form id="form-fijo"><fieldset id="campos-fijo">
+            <div class="field"><label for="fijo-descripcion">Nombre</label><input id="fijo-descripcion" name="descripcion" maxlength="180" required placeholder="Por ejemplo: Internet"></div>
+            <div class="field"><label for="fijo-mes">Mes al que corresponde</label><input id="fijo-mes" name="mes" type="month" required></div>
+            <div class="field"><label for="fijo-vencimiento">Vencimiento</label><input id="fijo-vencimiento" name="vencimiento" type="date" required></div>
+            <div class="field"><label for="fijo-monto">Importe previsto · ARS</label><input id="fijo-monto" name="monto" inputmode="decimal" maxlength="18" placeholder="$0,00" required></div>
+            <div class="field"><label for="fijo-categoria">Categoría</label><select id="fijo-categoria" name="categoria" required></select></div>
+            <div class="field" id="fijo-otros" hidden><label for="fijo-detalle">Detalle de Otros</label><input id="fijo-detalle" name="categoriaDetalle" maxlength="100" disabled></div>
+            <button type="submit">Guardar obligación</button><button type="button" class="secundario" id="cerrar-fijo">Volver</button>
+          </fieldset></form><p id="mensaje-fijo" role="status"></p>
+        </dialog>
+        <dialog id="dialogo-pago-fijo" aria-labelledby="titulo-pago-fijo">
+          <h2 id="titulo-pago-fijo">Registrar pago</h2>
+          <p class="hint">Se guardará como gasto y actualizará el balance. Si ya lo cargaste en Nuevo gasto, no lo registres de nuevo.</p>
+          <form id="form-pago-fijo"><fieldset id="campos-pago-fijo">
+            <div class="field"><label for="pf-monto">Importe pagado · ARS</label><input id="pf-monto" name="monto" inputmode="decimal" maxlength="18" required></div>
+            <div class="field"><label for="pf-fecha">Fecha real de pago</label><input id="pf-fecha" name="fecha" type="date" required></div>
+            <div class="field"><label for="pf-pagador">Quién pagó</label><select id="pf-pagador" name="pagador" required><option value="">Elegí una persona</option><option value="persona1" data-etiqueta-persona="persona1">Persona 1</option><option value="persona2" data-etiqueta-persona="persona2">Persona 2</option></select></div>
+            <div class="field"><label for="pf-division">Cómo se divide</label><select id="pf-division" name="division"><option value="mitad">50/50</option><option value="invitacion">Invitación</option><option value="otro">Otro %</option></select></div>
+            <div class="field" id="pf-personalizado" hidden><label for="pf-porcentaje">Porcentaje de <span data-persona="persona1">Persona 1</span></label><input id="pf-porcentaje" name="porcentajePersona1" type="number" min="0" max="100" step="0.01" value="50" disabled></div>
+            <button type="submit">Confirmar pago</button><button type="button" class="secundario" id="cerrar-pago-fijo">Volver</button>
+          </fieldset></form><p id="mensaje-pago-fijo" role="status"></p>
+        </dialog>
+        <section id="inicio" aria-label="Resumen de Convivencia">
+          <div class="acciones-inicio"><h1>Nuestro hogar</h1><button id="nuevo-desde-inicio" type="button">+ Nuevo gasto</button></div>
+          <div class="filtro"><div class="field"><label for="mes-inicio">Mes del resumen</label><input id="mes-inicio" type="month" required></div><button id="actualizar-inicio" type="button" class="secundario">Actualizar</button></div>
+          <p id="estado-inicio" role="status" aria-live="polite">Cargando resumen…</p>
+          <div id="contenido-inicio" class="dashboard" hidden>
+            <article class="panel"><h2>Gastos corrientes del mes</h2><strong id="total-inicio" class="total-mes"></strong><p id="cantidad-inicio" class="hint"></p></article>
+            <article class="panel"><h2>Gastos fijos</h2><strong id="resumen-fijos" class="total-mes"></strong><p id="vencidos-inicio" class="hint"></p><button id="fijos-desde-inicio" class="secundario" type="button">Ver gastos fijos</button></article>
+            <article class="panel panel-balance"><h2>Balance</h2><div class="deudas"><p><span><span data-persona="persona1">Persona 1</span> debe</span><strong id="deuda-persona1"></strong></p><p><span><span data-persona="persona2">Persona 2</span> debe</span><strong id="deuda-persona2"></strong></p></div><p class="hint">Saldo pendiente de todos los meses.</p><button id="balance-desde-inicio" class="secundario" type="button">Ver balance</button></article>
+            <article class="panel"><h2>Gastos por categoría</h2><p id="categorias-vacias" class="hint" hidden>Las categorías aparecerán cuando carguen un gasto este mes.</p><ul id="categorias-inicio" class="lista-resumen"></ul></article>
+            <article class="panel"><h2>Últimos gastos corrientes</h2><ul id="ultimos-inicio" class="lista-resumen"></ul><button id="historial-desde-inicio" class="secundario" type="button">Ver todos los gastos</button></article>
+            <article class="panel"><h2>Compras grandes del mes</h2><strong id="compras-inicio" class="total-mes"></strong><p class="hint">Incluidas en el balance, separadas del gasto corriente.</p><button id="patrimonio-desde-inicio" class="secundario" type="button">Ver patrimonio</button></article>
+          </div>
+        </section>
+        <section id="nuevo" aria-label="Nuevo gasto" hidden>
+        <h1>Nuevo gasto</h1>
+        <form id="gasto">
+          <fieldset id="campos" disabled>
+            <div class="field"><label for="monto">Monto · ARS</label><input id="monto" name="monto" inputmode="decimal" placeholder="$0,00" required maxlength="18" aria-describedby="monto-ayuda"><span class="hint" id="monto-ayuda">Por ejemplo: $1.000.000,00. Usá coma para los decimales.</span></div>
+            <div class="field"><label for="descripcion">Descripción</label><input id="descripcion" name="descripcion" required maxlength="200" placeholder="¿Qué compramos?"></div>
+            <div class="field"><label for="categoria">Categoría</label><select id="categoria" name="categoria" required><option value="">Elegí una categoría</option></select></div>
+            <div class="field" id="otra-categoria" hidden><label for="categoria-detalle">Especificá la categoría</label><input id="categoria-detalle" name="categoriaDetalle" maxlength="100" placeholder="Por ejemplo: Mascotas" disabled></div>
+            <div class="field"><label for="fecha">Fecha</label><input id="fecha" name="fecha" type="date" required></div>
+            <fieldset><legend>Pagó</legend><div class="choices"><label><input type="radio" name="pagador" value="persona1" required><span><span data-persona="persona1">Persona 1</span></span></label><label><input type="radio" name="pagador" value="persona2"><span><span data-persona="persona2">Persona 2</span></span></label></div></fieldset>
+            <fieldset><legend>¿Cómo se divide?</legend><div class="choices"><label><input type="radio" name="division" value="mitad" checked><span>50/50</span></label><label><input type="radio" name="division" value="invitacion"><span>Invitación</span></label><label><input type="radio" name="division" value="otro"><span>Otro %</span></label></div></fieldset>
+            <div class="field" id="personalizado" hidden><label for="porcentaje">Porcentaje de <span data-persona="persona1">Persona 1</span></label><input id="porcentaje" name="porcentajePersona1" type="number" min="0" max="100" step="0.01" value="50"><span class="hint" id="resto"><span data-persona="persona2">Persona 2</span>: 50 %</span></div>
+            <p class="hint" id="division-ayuda">Cada uno asume el 50 %.</p>
+            <div class="field"><label for="comentario">Comentario (opcional)</label><textarea id="comentario" name="comentario" rows="3" maxlength="500" placeholder="Algún detalle que quieras recordar" aria-describedby="comentario-ayuda"></textarea><span class="hint" id="comentario-ayuda">Podés dejarlo vacío. Hasta 500 caracteres.</span></div>
+            <button id="guardar" type="submit">Guardar gasto</button>
+          </fieldset>
+        </form>
+        <p id="mensaje" role="status" aria-live="polite">Preparando el formulario…</p>
+        <button id="reintentar" type="button" hidden>Reintentar carga</button>
+        <p><a id="planilla" hidden target="_blank" rel="noopener">Ver gasto en Google Sheets</a></p>
+        </section>
+        <section id="historial" aria-label="Historial de gastos" hidden>
+          <h1>Historial de gastos</h1>
+          <div class="filtro"><div class="field"><label for="mes-historial">Mes</label><input type="month" id="mes-historial" required></div><button id="actualizar-historial" type="button">Actualizar</button></div>
+          <p id="estado-historial" role="status" aria-live="polite"></p>
+          <ul id="lista-gastos" aria-label="Gastos del mes"></ul>
+        </section>
+        <section id="balance" aria-label="Balance entre las dos personas" hidden>
+          <div class="acciones-inicio"><h1>Balance</h1><button id="actualizar-balance" class="secundario" type="button">Actualizar balance</button></div>
+          <p id="estado-balance" role="status" aria-live="polite"></p>
+          <div id="contenido-balance" hidden>
+            <div class="saldo"><span>Saldo total pendiente · Convivencia</span><p id="quien-debe"></p><strong id="importe-deuda"></strong></div>
+          </div>
+          <button id="abrir-pago" type="button" aria-expanded="false" aria-controls="formulario-pago" disabled>Registrar pago</button>
+          <div id="formulario-pago" class="panel" hidden>
+          <p class="hint">Registrá un pago que ya hayan hecho. Podés saldar toda la deuda o una parte. Dúo no envía dinero.</p>
+          <form id="transferencia">
+            <fieldset id="campos-transferencia" disabled>
+              <div class="field"><label for="emisor">Quién pagó</label><select id="emisor" name="emisor" required><option value="">Elegí quién pagó</option><option value="persona1" data-etiqueta-persona="persona1" data-destino="si">Persona 1</option><option value="persona2" data-etiqueta-persona="persona2" data-destino="si">Persona 2</option></select></div>
+              <div class="field"><label for="monto-transferencia">Monto · ARS</label><input id="monto-transferencia" name="monto" inputmode="decimal" placeholder="$0,00" maxlength="18" required></div>
+              <div class="field"><label for="fecha-transferencia">Fecha del pago</label><input id="fecha-transferencia" name="fecha" type="date" required></div>
+              <div class="field"><label for="comentario-transferencia">Comentario (opcional)</label><textarea id="comentario-transferencia" name="comentario" maxlength="500" rows="2"></textarea></div>
+              <button id="guardar-transferencia" type="submit">Guardar pago</button>
+            </fieldset>
+          </form>
+          </div>
+          <p id="estado-transferencia" role="status" aria-live="polite"></p>
+          <div id="detalles-balance" hidden>
+            <details class="balance-detalle"><summary>Cómo se calcula el saldo</summary><div id="personas-total" class="personas"></div></details>
+            <details class="balance-detalle"><summary>Detalle por mes y pagos</summary>
+            <div class="field"><label for="mes-balance">Mes del detalle</label><input id="mes-balance" type="month" required></div>
+            <p class="hint">Gastos y pagos del mes seleccionado. El saldo pendiente de arriba incluye todos los meses.</p>
+            <div id="personas-mes" class="personas"></div>
+            <h2>Pagos del mes</h2><p id="sin-transferencias"></p><ul id="lista-transferencias"></ul>
+            </details>
+          </div>
+        </section>
+      </main>
+      <footer>Hecho para compartir, de a dos.</footer>
+    </div>
+    <script>
+      const form = document.getElementById('gasto');
+      const campos = document.getElementById('campos');
+      const mensaje = document.getElementById('mensaje');
+      let solicitud = null;
+      let consultaHistorial = 0;
+      const mesHistorial = document.getElementById('mes-historial');
+      const moneda = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true });
+      function formatearMoneda(valor) { return '$' + moneda.format(valor); }
+      form.elements.monto.addEventListener('blur', () => {
+        const valor = form.elements.monto.value.trim().replace(/^\$\s*/, '');
+        if (/^(?:\d{1,9}|\d{1,3}(?:\.\d{3}){1,2})(?:,\d{1,2})?$/.test(valor)) {
+          form.elements.monto.value = formatearMoneda(Number(valor.replace(/\./g, '').replace(',', '.')));
+        }
+      });
+      function texto(tag, contenido, clase) {
+        const elemento = document.createElement(tag); elemento.textContent = contenido;
+        if (clase) elemento.className = clase;
+        return elemento;
+      }
+      function cargarHistorial() {
+        const consulta = ++consultaHistorial;
+        const estado = document.getElementById('estado-historial');
+        const lista = document.getElementById('lista-gastos');
+        lista.replaceChildren();
+        if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mesHistorial.value)) { estado.textContent = 'Seleccioná un mes válido.'; return; }
+        estado.textContent = 'Cargando gastos…';
+        google.script.run.withSuccessHandler(gastos => {
+          if (consulta !== consultaHistorial) return;
+          estado.textContent = gastos.length ? gastos.length + (gastos.length === 1 ? ' gasto en este mes.' : ' gastos en este mes.') : 'Todavía no hay gastos en este mes.';
+          gastos.forEach(gasto => {
+            const tarjeta = texto('li', '', 'movimiento');
+            const cabecera = texto('div', '', 'cabecera');
+            cabecera.append(texto('h2', gasto.descripcion), texto('strong', formatearMoneda(gasto.montoCentavos / 100)));
+            const fecha = String(gasto.fecha).split('-').reverse().join('/');
+            const categoria = gasto.categoria === 'Otros' && gasto.categoriaDetalle ? 'Otros · ' + gasto.categoriaDetalle : gasto.categoria;
+            const pagador = nombrePersona(gasto.pagadorId);
+            const reparto = gasto.division === 'mitad' ? '50/50' : gasto.division === 'invitacion' ? 'Invitación · sin deuda' : nombrePersona('persona1') + ' ' + gasto.persona1Porcentaje + ' % · ' + nombrePersona('persona2') + ' ' + gasto.persona2Porcentaje + ' %';
+            tarjeta.append(cabecera, texto('p', fecha + ' · ' + categoria, 'hint'), texto('p', 'Pagó ' + pagador + ' · ' + reparto));
+            if (gasto.comentario) {
+              const detalle = document.createElement('details');
+              detalle.append(texto('summary', 'Ver comentario'), texto('p', gasto.comentario, 'comentario')); tarjeta.append(detalle);
+            }
+            lista.append(tarjeta);
+          });
+        }).withFailureHandler(() => {
+          if (consulta === consultaHistorial) estado.textContent = 'No pudimos cargar los gastos. Presioná Actualizar para reintentar.';
+        }).listarGastos(mesHistorial.value);
+      }
+      function mostrarSeccion(seccion) {
+        document.getElementById('ir-mas').setAttribute('aria-pressed', String(['balance', 'patrimonio'].includes(seccion)));
+        document.querySelectorAll('#menu-mas [data-seccion]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.seccion === seccion)));
+        ['inicio', 'nuevo', 'historial', 'balance', 'fijos', 'patrimonio'].forEach(nombre => {
+          document.getElementById(nombre).hidden = nombre !== seccion;
+          document.getElementById('ir-' + nombre).setAttribute('aria-pressed', String(nombre === seccion));
+        });
+        if (seccion === 'inicio') cargarInicio();
+        if (seccion === 'fijos') cargarFijos();
+        if (seccion === 'patrimonio') cargarBienes();
+        if (seccion === 'historial') cargarHistorial();
+        if (seccion === 'balance') cargarBalance();
+      }
+      document.getElementById('ir-nuevo').addEventListener('click', () => mostrarSeccion('nuevo'));
+      document.getElementById('ir-historial').addEventListener('click', () => mostrarSeccion('historial'));
+      document.getElementById('ir-balance').addEventListener('click', () => mostrarSeccion('balance'));
+      document.getElementById('actualizar-historial').addEventListener('click', cargarHistorial);
+      mesHistorial.addEventListener('change', cargarHistorial);
+      function informar(texto, error = false) { mensaje.textContent = texto; mensaje.classList.toggle('error', error); }
+      function division() {
+        const esOtros = form.elements.categoria.value === 'Otros';
+        document.getElementById('otra-categoria').hidden = !esOtros;
+        form.elements.categoriaDetalle.disabled = !esOtros;
+        form.elements.categoriaDetalle.required = esOtros;
+        const valor = form.elements.division.value;
+        document.getElementById('personalizado').hidden = valor !== 'otro';
+        document.getElementById('porcentaje').required = valor === 'otro';
+        document.getElementById('porcentaje').disabled = valor !== 'otro';
+        document.getElementById('division-ayuda').textContent = valor === 'invitacion' ? 'Quien paga asume el 100 %. No genera deuda.' : valor === 'mitad' ? 'Cada uno asume el 50 %.' : 'El porcentaje restante corresponde a ' + nombrePersona('persona2') + '.';
+        document.getElementById('resto').textContent = nombrePersona('persona2') + ': ' + (Math.round((100 - Number(form.elements.porcentajePersona1.value)) * 100) / 100) + ' %';
+      }
+      function cargar() {
+        document.getElementById('reintentar').hidden = true;
+        informar('Preparando el formulario…');
+        google.script.run.withSuccessHandler(opciones => {
+          const categorias = document.getElementById('categoria');
+          categorias.length = 1;
+          opciones.categorias.forEach(c => categorias.add(new Option(c, c)));
+          const categoriasFijos = document.getElementById('fijo-categoria'); categoriasFijos.replaceChildren(new Option('Elegí una categoría', ''));
+          opciones.categorias.forEach(c => categoriasFijos.add(new Option(c, c)));
+          hoyFijos = opciones.fecha;
+          if (!document.getElementById('mes-fijos').value) document.getElementById('mes-fijos').value = opciones.fecha.slice(0, 7);
+          if (!document.getElementById('fijos').hidden) cargarFijos();
+          form.elements.fecha.value = opciones.fecha;
+          if (!document.getElementById('mes-inicio').value) document.getElementById('mes-inicio').value = opciones.fecha.slice(0, 7);
+          if (!document.getElementById('inicio').hidden) cargarInicio();
+          if (!mesHistorial.value) mesHistorial.value = opciones.fecha.slice(0, 7);
+          if (!document.getElementById('mes-balance').value) document.getElementById('mes-balance').value = opciones.fecha.slice(0, 7);
+          if (!document.getElementById('fecha-transferencia').value) document.getElementById('fecha-transferencia').value = opciones.fecha;
+          campos.disabled = false;
+          division(); informar('');
+        }).withFailureHandler(() => {
+          informar('No pudimos cargar el formulario. Volvé a intentar.', true);
+          document.getElementById('reintentar').hidden = false;
+          document.getElementById('estado-inicio').textContent = 'No pudimos preparar la app. Seleccioná un mes y presioná Actualizar, o recargá la página.';
+        }).obtenerOpciones();
+      }
+      form.addEventListener('input', () => { solicitud = null; division(); });
+      form.addEventListener('change', () => { solicitud = null; division(); });
+      form.addEventListener('submit', evento => {
+        evento.preventDefault();
+        if (campos.disabled) return;
+        if (!solicitud) solicitud = Object.assign(Object.fromEntries(new FormData(form)), { id: crypto.randomUUID(), espacio: 'convivencia' });
+        campos.disabled = true;
+        document.getElementById('guardar').textContent = 'Guardando…';
+        document.getElementById('planilla').hidden = true;
+        informar('Guardando el gasto…');
+        google.script.run.withSuccessHandler(resultado => {
+          const fecha = form.elements.fecha.value;
+          form.reset(); form.elements.fecha.value = fecha; solicitud = null;
+          campos.disabled = false; division();
+          document.getElementById('guardar').textContent = 'Guardar gasto';
+          informar('Gasto guardado correctamente.');
+          if (!document.getElementById('historial').hidden) cargarHistorial();
+          if (!document.getElementById('balance').hidden) cargarBalance();
+          if (!document.getElementById('inicio').hidden) cargarInicio();
+          const enlace = document.getElementById('planilla'); enlace.href = resultado.url; enlace.hidden = false;
+          form.elements.monto.focus();
+        }).withFailureHandler(error => {
+          campos.disabled = false; division();
+          document.getElementById('guardar').textContent = 'Reintentar guardado';
+          informar(error.message || 'No pudimos confirmar el guardado. Reintentá sin cambiar los datos para evitar duplicados.', true);
+        }).guardarGasto(solicitud);
+      });
+      document.getElementById('reintentar').addEventListener('click', cargar);
+      let consultaBalance = 0;
+      let solicitudTransferencia = null;
+      let guardandoTransferencia = false;
+      const formularioTransferencia = document.getElementById('transferencia');
+      const camposTransferencia = document.getElementById('campos-transferencia');
+      let nombresPersonas = { persona1: 'Persona 1', persona2: 'Persona 2' };
+      const nombrePersona = id => nombresPersonas[id] || id;
+      function aplicarNombres(r) {
+        nombresPersonas = r.nombres;
+        document.querySelectorAll('[data-persona]').forEach(el => el.textContent = nombrePersona(el.dataset.persona));
+        document.querySelectorAll('[data-etiqueta-persona]').forEach(el => { const id = el.dataset.etiquetaPersona; el.textContent = nombrePersona(id) + (el.dataset.destino ? ' a ' + nombrePersona(id === 'persona1' ? 'persona2' : 'persona1') : ''); });
+        document.getElementById('titulo-mas').textContent = r.nombre;
+        document.querySelector('#inicio h1').textContent = r.nombre;
+      }
+      function mostrarPersonas(destino, balance, mensual) {
+        const contenedor = document.getElementById(destino); contenedor.replaceChildren();
+        ['persona1', 'persona2'].forEach(id => {
+          const persona = balance[id];
+          const tarjeta = texto('div', '', 'movimiento');
+          tarjeta.append(texto('h2', nombrePersona(id)));
+          const filas = [['Pagó en gastos', persona.pagado], ['Su parte', persona.corresponde]];
+          if (persona.enviado) filas.push(['Pagos realizados', persona.enviado]);
+          if (persona.recibido) filas.push(['Pagos recibidos', persona.recibido]);
+          filas.forEach(([etiqueta, importe]) => {
+            const fila = texto('p', ''); fila.append(texto('span', etiqueta), texto('strong', formatearMoneda(importe / 100))); tarjeta.append(fila);
+          });
+          contenedor.append(tarjeta);
+        });
+      }
+      function cargarBalance() {
+        const consulta = ++consultaBalance;
+        const estado = document.getElementById('estado-balance');
+        const contenido = document.getElementById('contenido-balance');
+        contenido.hidden = true; camposTransferencia.disabled = true;
+        document.getElementById('detalles-balance').hidden = true;
+        document.getElementById('abrir-pago').disabled = true;
+        const mes = document.getElementById('mes-balance').value;
+        if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) { estado.textContent = 'Seleccioná un mes válido o esperá a que termine de cargar la app.'; return; }
+        estado.textContent = 'Calculando el balance…';
+        google.script.run.withSuccessHandler(resultado => {
+          if (consulta !== consultaBalance) return;
+          contenido.hidden = false; estado.textContent = '';
+          document.getElementById('detalles-balance').hidden = false;
+          const total = resultado.total;
+          document.getElementById('quien-debe').textContent = total.deudor ? nombrePersona(total.deudor) + ' le debe a ' + nombrePersona(total.acreedor) : 'Están a mano. No hay deuda pendiente.';
+          document.getElementById('importe-deuda').textContent = formatearMoneda(total.deuda / 100);
+          mostrarPersonas('personas-total', total, false); mostrarPersonas('personas-mes', resultado.mes, true);
+          const lista = document.getElementById('lista-transferencias'); lista.replaceChildren();
+          document.getElementById('sin-transferencias').textContent = resultado.transferencias.length ? '' : 'No hay pagos registrados en este mes.';
+          resultado.transferencias.forEach(t => {
+            const tarjeta = texto('li', '', 'movimiento');
+            tarjeta.append(texto('h2', nombrePersona(t.emisorId) + ' → ' + nombrePersona(t.receptorId)), texto('p', formatearMoneda(t.montoCentavos / 100) + ' · ' + String(t.fecha).split('-').reverse().join('/')));
+            if (t.comentario) tarjeta.append(texto('p', t.comentario, 'comentario'));
+            lista.append(tarjeta);
+          });
+          // Permitir reintentar una solicitud incierta aun si su primer envío saldó la deuda.
+          camposTransferencia.disabled = guardandoTransferencia || (!total.deuda && !solicitudTransferencia);
+          document.getElementById('abrir-pago').disabled = camposTransferencia.disabled;
+        }).withFailureHandler(error => {
+          if (consulta !== consultaBalance) return;
+          estado.textContent = (error.message || 'No pudimos cargar el balance.') + ' Presioná Actualizar balance para reintentar.';
+        }).obtenerBalance(mes);
+      }
+      document.getElementById('actualizar-balance').addEventListener('click', cargarBalance);
+      document.getElementById('mes-balance').addEventListener('change', cargarBalance);
+      function cerrarPago() {
+        document.getElementById('formulario-pago').hidden = true;
+        document.getElementById('abrir-pago').setAttribute('aria-expanded', 'false');
+        document.getElementById('abrir-pago').textContent = 'Registrar pago';
+      }
+      document.getElementById('abrir-pago').addEventListener('click', () => {
+        const panel = document.getElementById('formulario-pago');
+        if (!panel.hidden) { cerrarPago(); return; }
+        panel.hidden = false;
+        document.getElementById('abrir-pago').setAttribute('aria-expanded', 'true');
+        document.getElementById('abrir-pago').textContent = 'Cerrar formulario';
+        formularioTransferencia.elements.emisor.focus();
+      });
+      formularioTransferencia.addEventListener('input', () => { solicitudTransferencia = null; });
+      formularioTransferencia.addEventListener('change', () => { solicitudTransferencia = null; });
+      formularioTransferencia.elements.monto.addEventListener('blur', () => {
+        const valor = formularioTransferencia.elements.monto.value.trim().replace(/^\$\s*/, '');
+        if (/^(?:\d{1,9}|\d{1,3}(?:\.\d{3}){1,2})(?:,\d{1,2})?$/.test(valor)) formularioTransferencia.elements.monto.value = formatearMoneda(Number(valor.replace(/\./g, '').replace(',', '.')));
+      });
+      formularioTransferencia.addEventListener('submit', evento => {
+        evento.preventDefault();
+        if (guardandoTransferencia || camposTransferencia.disabled) return;
+        if (!solicitudTransferencia) solicitudTransferencia = Object.assign(Object.fromEntries(new FormData(formularioTransferencia)), { id: crypto.randomUUID() });
+        guardandoTransferencia = true; camposTransferencia.disabled = true;
+        document.getElementById('abrir-pago').disabled = true;
+        ++consultaBalance;
+        document.getElementById('contenido-balance').hidden = true;
+        const estado = document.getElementById('estado-transferencia');
+        const boton = document.getElementById('guardar-transferencia');
+        estado.textContent = 'Guardando el pago…'; boton.textContent = 'Guardando…';
+        google.script.run.withSuccessHandler(() => {
+          guardandoTransferencia = false; solicitudTransferencia = null;
+          const fecha = formularioTransferencia.elements.fecha.value;
+          formularioTransferencia.reset(); formularioTransferencia.elements.fecha.value = fecha;
+          estado.textContent = 'Pago registrado correctamente.'; boton.textContent = 'Guardar pago';
+          cerrarPago();
+          cargarBalance();
+        }).withFailureHandler(error => {
+          guardandoTransferencia = false; camposTransferencia.disabled = false;
+          document.getElementById('abrir-pago').disabled = false;
+          estado.textContent = (error.message || 'No pudimos confirmar el guardado.') + ' Si hubo un error de conexión, reintentá sin cambiar los datos.';
+          boton.textContent = 'Reintentar registro';
+        }).guardarTransferencia(solicitudTransferencia);
+      });
+      let consultaInicio = 0;
+      function cargarInicio() {
+        const consulta = ++consultaInicio;
+        const estado = document.getElementById('estado-inicio');
+        const contenido = document.getElementById('contenido-inicio');
+        const mes = document.getElementById('mes-inicio').value;
+        contenido.hidden = true;
+        if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) { estado.textContent = 'Seleccioná un mes para ver el resumen.'; return; }
+        estado.textContent = 'Cargando resumen…';
+        google.script.run.withSuccessHandler(r => {
+          if (consulta !== consultaInicio) return;
+          estado.textContent = r.cantidad ? '' : 'Todavía no hay gastos en este mes. Podés cargar el primero con «Nuevo gasto».';
+          document.getElementById('total-inicio').textContent = formatearMoneda(r.totalCentavos / 100);
+          document.getElementById('cantidad-inicio').textContent = r.cantidad + (r.cantidad === 1 ? ' gasto registrado' : ' gastos registrados');
+          document.getElementById('cantidad-inicio').textContent += ' · Gastos corrientes';
+          document.getElementById('compras-inicio').textContent = formatearMoneda(r.comprasCentavos / 100);
+          document.getElementById('resumen-fijos').textContent = r.fijos.total ? r.fijos.pagados + ' de ' + r.fijos.total + ' pagados' : 'Sin obligaciones';
+          document.getElementById('vencidos-inicio').textContent = r.fijos.vencidos ? r.fijos.vencidos + ' con vencimiento pendiente' : r.fijos.total ? 'Consultá los vencimientos del mes.' : 'Organizá los pagos de tu hogar.';
+          ['persona1', 'persona2'].forEach(id => { document.getElementById('deuda-' + id).textContent = formatearMoneda(Math.max(0, -r.balance[id].saldo) / 100); });
+          const categorias = document.getElementById('categorias-inicio'); categorias.replaceChildren();
+          document.getElementById('categorias-vacias').hidden = r.categorias.length > 0;
+          r.categorias.forEach(c => {
+            const item = texto('li', '');
+            const fila = texto('div', '', 'fila-resumen');
+            fila.append(texto('span', c.nombre), texto('strong', formatearMoneda(c.centavos / 100)));
+            const porcentaje = c.centavos / r.totalCentavos * 100;
+            const barra = texto('div', '', 'barra'); barra.setAttribute('aria-hidden', 'true');
+            const relleno = texto('span', ''); relleno.style.width = porcentaje + '%'; barra.append(relleno);
+            item.append(fila, texto('p', new Intl.NumberFormat('es-AR', { maximumFractionDigits: 1 }).format(porcentaje) + ' % del mes', 'hint'), barra); categorias.append(item);
+          });
+          const ultimos = document.getElementById('ultimos-inicio'); ultimos.replaceChildren();
+          if (!r.ultimos.length) ultimos.append(texto('li', 'Sin movimientos este mes.', 'hint'));
+          r.ultimos.forEach(g => {
+            const item = texto('li', '');
+            const fila = texto('div', '', 'fila-resumen');
+            fila.append(texto('span', g.descripcion), texto('strong', formatearMoneda(g.montoCentavos / 100)));
+            item.append(fila, texto('p', (g.categoria === 'Otros' && g.categoriaDetalle ? 'Otros · ' + g.categoriaDetalle : g.categoria) + ' · Pagó ' + nombrePersona(g.pagadorId), 'hint'), texto('p', String(g.fecha).split('-').reverse().join('/'), 'hint'));
+            ultimos.append(item);
+          });
+          contenido.hidden = false;
+        }).withFailureHandler(error => {
+          if (consulta !== consultaInicio) return;
+          estado.textContent = (error.message || 'No pudimos cargar el resumen.') + ' Presioná Actualizar para reintentar.';
+        }).obtenerInicio(mes);
+      }
+      document.getElementById('ir-inicio').addEventListener('click', () => mostrarSeccion('inicio'));
+      document.getElementById('nuevo-desde-inicio').addEventListener('click', () => { mostrarSeccion('nuevo'); form.elements.monto.focus(); });
+      document.getElementById('balance-desde-inicio').addEventListener('click', () => { document.getElementById('mes-balance').value = document.getElementById('mes-inicio').value; mostrarSeccion('balance'); });
+      document.getElementById('historial-desde-inicio').addEventListener('click', () => { mesHistorial.value = document.getElementById('mes-inicio').value; mostrarSeccion('historial'); });
+      document.getElementById('actualizar-inicio').addEventListener('click', cargarInicio);
+      document.getElementById('mes-inicio').addEventListener('change', cargarInicio);
+      const navFijos = texto('button', 'Fijos'); navFijos.id = 'ir-fijos'; navFijos.type = 'button'; navFijos.setAttribute('aria-pressed', 'false'); navFijos.setAttribute('aria-controls', 'fijos');
+      document.querySelector('nav').append(navFijos);
+      navFijos.addEventListener('click', () => mostrarSeccion('fijos'));
+      document.getElementById('fijos-desde-inicio').addEventListener('click', () => { document.getElementById('mes-fijos').value = document.getElementById('mes-inicio').value; mostrarSeccion('fijos'); });
+      let hoyFijos = '', consultaFijos = 0, idFijoNuevo = null, fijoPagando = null;
+      const formFijo = document.getElementById('form-fijo'), formPagoFijo = document.getElementById('form-pago-fijo');
+      const dialogoFijo = document.getElementById('dialogo-fijo'), dialogoPagoFijo = document.getElementById('dialogo-pago-fijo');
+      function cargarFijos() {
+        const consulta = ++consultaFijos;
+        const estado = document.getElementById('estado-fijos'), lista = document.getElementById('lista-fijos');
+        lista.replaceChildren(); const mes = document.getElementById('mes-fijos').value;
+        if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) { estado.textContent = 'Seleccioná un mes.'; return; }
+        estado.textContent = 'Cargando obligaciones…';
+        google.script.run.withSuccessHandler(fijos => {
+          if (consulta !== consultaFijos) return;
+          estado.textContent = fijos.length ? fijos.filter(f => f.estado === 'pagado').length + ' de ' + fijos.length + ' pagados' : 'Todavía no hay obligaciones este mes. Agregá una o copiá las del mes anterior.';
+          fijos.forEach(f => {
+            const item = texto('li', '', 'movimiento'); const fila = texto('div', '', 'fila-resumen');
+            fila.append(texto('h2', f.descripcion), texto('strong', formatearMoneda((f.pago ? f.pago.montoCentavos : f.montoCentavos) / 100)));
+            item.append(fila, texto('p', (f.estado === 'pagado' ? 'Pagado' : f.estado === 'vencido' ? 'Vencido' : 'Pendiente') + ' · Vence ' + f.vencimiento.split('-').reverse().join('/'), f.estado === 'vencido' ? 'hint vencido' : 'hint'));
+            if (f.pago) item.append(texto('p', 'Pagó ' + nombrePersona(f.pago.pagadorId) + ' · ' + f.pago.fecha.split('-').reverse().join('/'), 'hint'));
+            else {
+              const boton = texto('button', 'Registrar pago'); boton.type = 'button';
+              boton.addEventListener('click', () => {
+                fijoPagando = f.id; formPagoFijo.reset(); formPagoFijo.elements.monto.value = formatearMoneda(f.montoCentavos / 100);
+                formPagoFijo.elements.fecha.value = hoyFijos; formPagoFijo.elements.fecha.max = hoyFijos;
+                actualizarDivisionFija(); document.getElementById('titulo-pago-fijo').textContent = 'Pagar ' + f.descripcion;
+                document.getElementById('mensaje-pago-fijo').textContent = ''; dialogoPagoFijo.showModal();
+              }); item.append(boton);
+            }
+            lista.append(item);
+          });
+        }).withFailureHandler(e => { if (consulta === consultaFijos) estado.textContent = (e.message || 'No pudimos cargar las obligaciones.') + ' Presioná Actualizar para reintentar.'; }).listarFijos(mes);
+      }
+      document.getElementById('actualizar-fijos').addEventListener('click', cargarFijos);
+      document.getElementById('mes-fijos').addEventListener('change', cargarFijos);
+      function actualizarOtrosFijos() {
+        const otros = formFijo.elements.categoria.value === 'Otros';
+        document.getElementById('fijo-otros').hidden = !otros; formFijo.elements.categoriaDetalle.disabled = !otros; formFijo.elements.categoriaDetalle.required = otros;
+      }
+      formFijo.elements.categoria.addEventListener('change', actualizarOtrosFijos);
+      function actualizarDivisionFija() {
+        const otro = formPagoFijo.elements.division.value === 'otro';
+        document.getElementById('pf-personalizado').hidden = !otro;
+        formPagoFijo.elements.porcentajePersona1.disabled = !otro; formPagoFijo.elements.porcentajePersona1.required = otro;
+      }
+      formPagoFijo.elements.division.addEventListener('change', actualizarDivisionFija);
+      document.getElementById('agregar-fijo').addEventListener('click', () => {
+        if (!hoyFijos) { document.getElementById('estado-fijos').textContent = 'Esperá a que cargue la app o recargá la página.'; return; }
+        formFijo.reset(); idFijoNuevo = crypto.randomUUID(); formFijo.elements.mes.value = document.getElementById('mes-fijos').value;
+        actualizarOtrosFijos(); document.getElementById('mensaje-fijo').textContent = ''; dialogoFijo.showModal();
+      });
+      document.getElementById('cerrar-fijo').addEventListener('click', () => dialogoFijo.close());
+      document.getElementById('cerrar-pago-fijo').addEventListener('click', () => dialogoPagoFijo.close());
+      for (const [dialogo, camposId] of [[dialogoFijo, 'campos-fijo'], [dialogoPagoFijo, 'campos-pago-fijo']]) dialogo.addEventListener('cancel', e => { if (document.getElementById(camposId).disabled) e.preventDefault(); });
+      for (const formulario of [formFijo, formPagoFijo]) formulario.elements.monto.addEventListener('blur', () => {
+        const valor = formulario.elements.monto.value.trim().replace(/^\$\s*/, '');
+        if (/^(?:\d{1,9}|\d{1,3}(?:\.\d{3}){1,2})(?:,\d{1,2})?$/.test(valor)) formulario.elements.monto.value = formatearMoneda(Number(valor.replace(/\./g, '').replace(',', '.')));
+      });
+      formFijo.addEventListener('submit', e => {
+        e.preventDefault(); const campos = document.getElementById('campos-fijo'); if (campos.disabled) return;
+        const dato = Object.assign(Object.fromEntries(new FormData(formFijo)), { id: idFijoNuevo }); campos.disabled = true;
+        document.getElementById('mensaje-fijo').textContent = 'Guardando…';
+        google.script.run.withSuccessHandler(() => {
+          campos.disabled = false; dialogoFijo.close(); document.getElementById('mes-fijos').value = dato.mes; cargarFijos();
+        }).withFailureHandler(e => { campos.disabled = false; document.getElementById('mensaje-fijo').textContent = (e.message || 'No pudimos confirmar el guardado.') + ' Reintentá sin cambiar los datos.'; }).guardarFijo(dato);
+      });
+      formPagoFijo.addEventListener('submit', e => {
+        e.preventDefault(); const campos = document.getElementById('campos-pago-fijo'); if (campos.disabled) return;
+        const dato = Object.assign(Object.fromEntries(new FormData(formPagoFijo)), { id: fijoPagando }); campos.disabled = true;
+        document.getElementById('mensaje-pago-fijo').textContent = 'Guardando pago…';
+        google.script.run.withSuccessHandler(() => { campos.disabled = false; dialogoPagoFijo.close(); cargarFijos(); }).withFailureHandler(e => { campos.disabled = false; document.getElementById('mensaje-pago-fijo').textContent = (e.message || 'No pudimos confirmar el pago.') + ' Podés reintentar sin duplicarlo.'; }).pagarFijo(dato);
+      });
+      document.getElementById('copiar-fijos').addEventListener('click', () => {
+        const boton = document.getElementById('copiar-fijos'), estado = document.getElementById('estado-fijos');
+        boton.disabled = true; estado.textContent = 'Copiando obligaciones…';
+        google.script.run.withSuccessHandler(r => { boton.disabled = false; if (r.cantidad) cargarFijos(); else estado.textContent = 'No hay obligaciones nuevas para copiar del mes anterior.'; }).withFailureHandler(e => { boton.disabled = false; estado.textContent = e.message || 'No pudimos copiar. Reintentá.'; }).copiarFijos(document.getElementById('mes-fijos').value);
+      });
+      const navBienes = texto('button', 'Patrimonio'); navBienes.type = 'button'; navBienes.id = 'ir-patrimonio'; navBienes.setAttribute('aria-pressed', 'false'); navBienes.setAttribute('aria-controls', 'patrimonio'); document.querySelector('nav').append(navBienes);
+      navBienes.addEventListener('click', () => mostrarSeccion('patrimonio'));
+      document.getElementById('patrimonio-desde-inicio').addEventListener('click', () => mostrarSeccion('patrimonio'));
+      const formBien = document.getElementById('form-bien'), dialogoBien = document.getElementById('dialogo-bien'), camposBien = document.getElementById('campos-bien');
+      let consultaBienes = 0, consultaVinculo = 0, idBien = null;
+      function cargarBienes() {
+        const consulta = ++consultaBienes, lista = document.getElementById('lista-bienes'), estado = document.getElementById('estado-bienes'); lista.replaceChildren(); estado.textContent = 'Cargando compras…';
+        google.script.run.withSuccessHandler(bienes => {
+          if (consulta !== consultaBienes) return;
+          estado.textContent = bienes.length ? bienes.length + (bienes.length === 1 ? ' compra registrada' : ' compras registradas') : 'Todavía no hay compras. Agregá una nueva o vinculá un gasto del historial.';
+          bienes.forEach(b => {
+            const tarjeta = texto('article', '', 'panel');
+            if (b.pendiente) {
+              tarjeta.append(texto('h2', 'Compra pendiente de completar'), texto('p', 'El guardado se interrumpió. Podés completarlo sin duplicar el gasto.', 'hint'));
+              const boton = texto('button', 'Completar guardado'); boton.type = 'button';
+              boton.addEventListener('click', () => { boton.disabled = true; google.script.run.withSuccessHandler(cargarBienes).withFailureHandler(e => { boton.disabled = false; estado.textContent = e.message || 'Reintentá el guardado.'; }).guardarPatrimonio({ id: b.id }); }); tarjeta.append(boton);
+            } else {
+              const g = b.gasto;
+              const cabecera = texto('div', '', 'cabecera-bien');
+              cabecera.append(texto('h2', g.descripcion), texto('strong', formatearMoneda(g.montoCentavos / 100)));
+              tarjeta.append(cabecera, texto('p', g.fecha.split('-').reverse().join('/') + ' · ' + b.tipo, 'hint'));
+              const detalle = texto('details', '', 'balance-detalle'); detalle.append(texto('summary', 'Ver detalles'));
+              const reparto = g.division === 'invitacion' ? 'Invitación' : g.division === 'mitad' ? '50/50' : nombrePersona('persona1') + ' ' + g.persona1Porcentaje + ' % · ' + nombrePersona('persona2') + ' ' + g.persona2Porcentaje + ' %';
+              detalle.append(texto('p', 'Pagó ' + nombrePersona(g.pagadorId) + ' · ' + reparto), texto('p', 'Estado: ' + b.estado));
+              if (b.garantia) detalle.append(texto('p', 'Garantía hasta ' + b.garantia.split('-').reverse().join('/')));
+              if (b.notas) detalle.append(texto('p', b.notas, 'comentario'));
+              tarjeta.append(detalle);
+            }
+            lista.append(tarjeta);
+          });
+        }).withFailureHandler(e => { if (consulta === consultaBienes) estado.textContent = (e.message || 'No pudimos cargar las compras.') + ' Presioná Actualizar.'; }).listarPatrimonio();
+      }
+      function modoBien() {
+        const existente = formBien.elements.modo.value === 'existente';
+        document.getElementById('bien-vinculo').hidden = !existente;
+        document.getElementById('bien-nuevo').hidden = existente; document.getElementById('bien-nuevo').disabled = existente;
+        formBien.elements.movimientoId.disabled = !existente; formBien.elements.movimientoId.required = existente;
+        const otro = formBien.elements.division.value === 'otro'; document.getElementById('bien-porcentaje-campo').hidden = !otro; formBien.elements.porcentajePersona1.disabled = !otro; formBien.elements.porcentajePersona1.required = otro;
+      }
+      document.getElementById('agregar-bien').addEventListener('click', () => {
+        formBien.reset(); idBien = crypto.randomUUID(); ++consultaVinculo;
+        document.getElementById('confirmacion-bien').hidden = true;
+        formBien.elements.fecha.value = hoyFijos; document.getElementById('bien-mes').value = hoyFijos.slice(0, 7); formBien.elements.movimientoId.replaceChildren(new Option('Elegí un gasto', ''));
+        document.getElementById('estado-vinculo').textContent = ''; document.getElementById('mensaje-bien').textContent = ''; modoBien(); dialogoBien.showModal();
+      });
+      formBien.elements.modo.addEventListener('change', modoBien); formBien.elements.division.addEventListener('change', modoBien);
+      document.getElementById('bien-mes').addEventListener('change', () => { ++consultaVinculo; formBien.elements.movimientoId.replaceChildren(new Option('Buscá los gastos de este mes', '')); });
+      document.getElementById('buscar-bien').addEventListener('click', () => {
+        const consulta = ++consultaVinculo; formBien.elements.movimientoId.replaceChildren(new Option('Elegí un gasto', '')); document.getElementById('estado-vinculo').textContent = 'Buscando…';
+        google.script.run.withSuccessHandler(gastos => {
+          if (consulta !== consultaVinculo) return;
+          document.getElementById('estado-vinculo').textContent = gastos.length ? 'Elegí la compra que ya registraste.' : 'No hay gastos disponibles en ese mes.';
+          gastos.forEach(g => formBien.elements.movimientoId.add(new Option(g.descripcion + ' · ' + formatearMoneda(g.montoCentavos / 100) + ' · ' + g.fecha, g.id)));
+        }).withFailureHandler(e => { if (consulta === consultaVinculo) document.getElementById('estado-vinculo').textContent = e.message || 'No pudimos buscar los gastos.'; }).opcionesVincularPatrimonio(document.getElementById('bien-mes').value);
+      });
+      formBien.elements.monto.addEventListener('blur', () => {
+        const valor = formBien.elements.monto.value.trim().replace(/^\$\s*/, '');
+        if (/^(?:\d{1,9}|\d{1,3}(?:\.\d{3}){1,2})(?:,\d{1,2})?$/.test(valor)) formBien.elements.monto.value = formatearMoneda(Number(valor.replace(/\./g, '').replace(',', '.')));
+      });
+      formBien.addEventListener('submit', e => {
+        e.preventDefault(); if (camposBien.disabled) return;
+        // Releer las correcciones; el mismo id evita duplicar un guardado ya recibido.
+        const solicitudBien = Object.assign(Object.fromEntries(new FormData(formBien)), { id: idBien });
+        camposBien.disabled = true; document.getElementById('mensaje-bien').textContent = 'Guardando compra…';
+        google.script.run.withSuccessHandler(resultado => {
+          camposBien.disabled = false; dialogoBien.close();
+          const confirmacion = document.getElementById('confirmacion-bien');
+          confirmacion.textContent = resultado.yaRegistrada
+            ? 'Esta compra ya había sido registrada. Confirmamos su guardado con los datos originales, sin duplicarla. Revisá sus detalles abajo.'
+            : 'Compra guardada correctamente.';
+          confirmacion.hidden = false; cargarBienes();
+        }).withFailureHandler(e => {
+          camposBien.disabled = false; document.getElementById('mensaje-bien').textContent = (e.message || 'No pudimos confirmar el guardado.') + ' Podés corregir los datos y volver a guardar. Si la compra ya se registró, te lo confirmaremos sin duplicarla.';
+        }).guardarPatrimonio(solicitudBien);
+      });
+      document.getElementById('cerrar-bien').addEventListener('click', () => dialogoBien.close());
+      dialogoBien.addEventListener('cancel', e => { if (camposBien.disabled) e.preventDefault(); });
+      document.getElementById('actualizar-bienes').addEventListener('click', cargarBienes);
+      const trazosIconos = {
+        inicio: 'M3 10 12 3l9 7M5 9v12h5v-7h4v7h5V9',
+        historial: 'M6 3h12v18l-3-2-3 2-3-2-3 2V3M9 8h6M9 12h6',
+        nuevo: 'M12 5v14M5 12h14',
+        fijos: 'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2ZM7 3v4M17 3v4M3 11h18M8 15h2M14 15h2',
+        balance: 'M12 3v18M5 7h14M5 7l-3 7h6L5 7ZM19 7l-3 7h6l-3-7ZM8 21h8',
+        patrimonio: 'M4 11V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5M3 11h3v5h12v-5h3v9H3v-9ZM5 20v2M19 20v2',
+        mas: 'M5 6h14M5 12h14M5 18h14'
+      };
+      function icono(nombre) {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '1.6'); svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round'); svg.setAttribute('aria-hidden', 'true'); svg.classList.add('icono');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', trazosIconos[nombre]); svg.append(path); return svg;
+      }
+      const menuMas = document.getElementById('menu-mas');
+      const botonMas = texto('button', 'Más'); botonMas.id = 'ir-mas'; botonMas.type = 'button'; botonMas.setAttribute('aria-pressed', 'false'); botonMas.setAttribute('aria-haspopup', 'dialog'); botonMas.setAttribute('aria-controls', 'menu-mas'); document.querySelector('nav').append(botonMas);
+      botonMas.addEventListener('click', () => menuMas.showModal());
+      document.getElementById('cerrar-mas').addEventListener('click', () => menuMas.close());
+      document.getElementById('abrir-menu').replaceChildren(icono('mas'));
+      document.getElementById('abrir-menu').addEventListener('click', () => { menuMas.showModal(); document.getElementById('abrir-menu').setAttribute('aria-expanded', 'true'); });
+      menuMas.addEventListener('close', () => document.getElementById('abrir-menu').setAttribute('aria-expanded', 'false'));
+      menuMas.addEventListener('click', e => { if (e.target === menuMas) { const r = menuMas.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) menuMas.close(); } });
+      matchMedia('(min-width: 1000px)').addEventListener('change', e => { if (e.matches && menuMas.open) menuMas.close(); });
+      for (const [nombre, etiqueta] of Object.entries({ inicio: 'Inicio', historial: 'Gastos', fijos: 'Gastos fijos', balance: 'Balance', patrimonio: 'Patrimonio', nuevo: 'Nuevo gasto' })) {
+        const boton = texto('button', etiqueta, 'secundario'); boton.type = 'button'; boton.dataset.seccion = nombre; boton.setAttribute('aria-pressed', String(nombre === 'inicio')); boton.setAttribute('aria-controls', nombre); boton.prepend(icono(nombre));
+        menuMas.insertBefore(boton, document.getElementById('cerrar-mas'));
+        boton.addEventListener('click', () => { menuMas.close(); mostrarSeccion(nombre); document.querySelector('#' + nombre + ' h1').setAttribute('tabindex', '-1'); document.querySelector('#' + nombre + ' h1').focus(); });
+      }
+      const etiquetasNav = { inicio: 'Inicio', historial: 'Gastos', nuevo: 'Nuevo', fijos: 'Fijos', balance: 'Balance', patrimonio: 'Patrimonio', mas: 'Más' };
+      for (const [nombre, etiqueta] of Object.entries(etiquetasNav)) {
+        const boton = document.getElementById('ir-' + nombre); boton.replaceChildren(icono(nombre), texto('span', etiqueta));
+        if (nombre === 'nuevo') boton.setAttribute('aria-label', 'Nuevo gasto');
+      }
+      let tokenInvitacion = '', sesionDuo = null, inicioAutorizado = false, procesandoAcceso = false;
+      const dialogoAcceso = document.getElementById('dialogo-acceso');
+      function pintarAcceso(r) {
+        sesionDuo = r;
+        const autorizado = r.estado === 'miembro';
+        document.getElementById('app-duo').hidden = !autorizado;
+        document.getElementById('puerta-acceso').hidden = autorizado;
+        document.getElementById('correo-puerta').textContent = r.correo;
+        document.getElementById('configurar-cuenta').hidden = r.estado !== 'configurar';
+        document.getElementById('aceptar-enlace').hidden = r.estado !== 'sin-acceso' || !tokenInvitacion;
+        document.getElementById('estado-acceso').textContent = r.estado === 'configurar' ? 'Creá tu espacio: la planilla se preparará automáticamente en tu cuenta.' : r.estado === 'pendiente' ? 'Aceptaste la invitación. Falta que quien administra Dúo confirme tu cuenta. Después, tocá Volver a comprobar acceso.' : 'Esta cuenta no tiene acceso todavía.';
+        if (!autorizado) return;
+        aplicarNombres(r);
+        document.getElementById('abrir-acceso').textContent = nombrePersona(r.persona) + ' · Cuenta';
+        document.getElementById('cuenta-acceso').textContent = nombrePersona(r.persona) + ' · ' + r.correo;
+        document.getElementById('admin-acceso').hidden = !r.admin;
+        document.getElementById('crear-invitacion').hidden = !!r.otro;
+        document.getElementById('crear-invitacion').textContent = (r.invitacionVigente || r.pendiente ? 'Crear nuevo enlace para ' : 'Invitar a ') + nombrePersona(r.persona === 'persona1' ? 'persona2' : 'persona1');
+        document.getElementById('resumen-acceso').textContent = r.otro ? 'Ambas cuentas tienen acceso al espacio.' : r.invitacionVigente ? 'Hay una invitación vigente. Crear otra invalida la anterior.' : 'Invitá a la otra persona a compartir este espacio.';
+        document.getElementById('solicitud-acceso').hidden = !r.pendiente;
+        document.getElementById('pendiente-acceso').textContent = r.pendiente ? r.pendiente.correo + ' aceptó como ' + nombrePersona(r.pendiente.persona) + '.' : '';
+        document.getElementById('revocar-invitacion').hidden = !r.pendiente && !r.invitacionVigente;
+        if (r.otro || r.pendiente || !r.invitacionVigente) document.getElementById('enlace-acceso').hidden = true;
+        if (!inicioAutorizado) { inicioAutorizado = true; cargar(); }
+      }
+      function revisarAcceso() {
+        google.script.run.withSuccessHandler(pintarAcceso).withFailureHandler(e => {
+          document.getElementById('estado-acceso').textContent = e.message || 'No pudimos verificar tu cuenta. Volvé a intentar.';
+          document.getElementById('mensaje-acceso').textContent = e.message || 'No pudimos actualizar el acceso.';
+        }).obtenerAcceso();
+      }
+      function ejecutarAcceso(metodo, args, exito) {
+        if (procesandoAcceso) return;
+        procesandoAcceso = true;
+        const botones = Array.from(document.querySelectorAll('#puerta-acceso button, #dialogo-acceso button'));
+        botones.forEach(b => b.disabled = true);
+        document.getElementById('mensaje-acceso').textContent = 'Procesando…';
+        const terminar = () => { procesandoAcceso = false; botones.forEach(b => b.disabled = false); };
+        google.script.run.withSuccessHandler(r => { terminar(); document.getElementById('mensaje-acceso').textContent = ''; exito(r); }).withFailureHandler(e => {
+          terminar(); document.getElementById('estado-acceso').textContent = e.message || 'No pudimos completar la operación.';
+          document.getElementById('mensaje-acceso').textContent = e.message || 'No pudimos completar la operación. Actualizá antes de reintentar.';
+        })[metodo](...args);
+      }
+      document.getElementById('configurar-cuenta').addEventListener('submit', e => {
+        e.preventDefault();
+        document.getElementById('estado-acceso').textContent = 'Creando tu espacio…';
+        ejecutarAcceso('configurarInstalacion', [{ nombre: document.getElementById('nombre-espacio').value, persona1: document.getElementById('nombre-persona1').value, persona2: document.getElementById('nombre-persona2').value }], revisarAcceso);
+      });
+      document.getElementById('aceptar-enlace').addEventListener('click', () => ejecutarAcceso('aceptarInvitacion', [tokenInvitacion], () => { tokenInvitacion = ''; google.script.history.replace({}, {}, ''); revisarAcceso(); }));
+      document.getElementById('revisar-acceso').addEventListener('click', revisarAcceso);
+      document.getElementById('actualizar-acceso').addEventListener('click', revisarAcceso);
+      document.getElementById('abrir-acceso').addEventListener('click', () => { dialogoAcceso.showModal(); revisarAcceso(); });
+      document.getElementById('cerrar-acceso').addEventListener('click', () => dialogoAcceso.close());
+      document.getElementById('crear-invitacion').addEventListener('click', () => ejecutarAcceso('crearInvitacion', [], r => {
+        document.getElementById('url-invitacion').value = r.url; document.getElementById('enlace-acceso').hidden = false; revisarAcceso();
+      }));
+      document.getElementById('copiar-invitacion').addEventListener('click', async () => {
+        const campo = document.getElementById('url-invitacion');
+        try { await navigator.clipboard.writeText(campo.value); document.getElementById('mensaje-acceso').textContent = 'Enlace copiado.'; }
+        catch (_) { campo.focus(); campo.select(); document.getElementById('mensaje-acceso').textContent = 'Seleccionamos el enlace. Copialo con el menú de tu dispositivo.'; }
+      });
+      document.getElementById('confirmar-invitacion').addEventListener('click', () => {
+        if (sesionDuo && sesionDuo.pendiente) ejecutarAcceso('confirmarInvitacion', [sesionDuo.pendiente.id, sesionDuo.pendiente.correo], revisarAcceso);
+      });
+      document.getElementById('revocar-invitacion').addEventListener('click', () => ejecutarAcceso('revocarInvitacion', [], () => { document.getElementById('url-invitacion').value = ''; revisarAcceso(); }));
+      google.script.url.getLocation(l => { tokenInvitacion = new URLSearchParams(String(l.hash || '').replace(/^#/, '')).get('invitacion') || ''; revisarAcceso(); });
+    </script>
+  </body>
+</html>
