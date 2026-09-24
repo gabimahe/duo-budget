@@ -15,32 +15,212 @@ Una base minimalista para administrar los gastos de un hogar de dos personas. Ca
 
 Esta primera versión usa pesos argentinos, zona horaria de Buenos Aires y dos integrantes. No importa datos de otras instalaciones, no conecta bancos y no realiza pagos bancarios. No incluye presupuestos con límites ni alertas de exceso. Las categorías se personalizan en `src/Gastos.gs`; los estilos, en `src/Index.html`.
 
-## Instalación paso a paso
+## Instalá tu propia copia
 
-Necesitás una cuenta Google con Apps Script habilitado. Las cuentas administradas por una organización pueden tener restricciones. Para trabajar localmente: Git, Node.js LTS y clasp.
+Hacé esta configuración una sola vez, desde una computadora. Después podrás abrir tu Dúo desde el celular usando tu enlace.
 
-1. En GitHub, elegí **Code → Download ZIP**, o copiá la dirección HTTPS del repositorio y ejecutá `git clone DIRECCION_COPIADA`. Abrí la carpeta descargada en VS Code.
-2. Entrá a [Google Apps Script](https://script.google.com/) con la cuenta que será dueña de tus datos y creá un **proyecto nuevo**. No lo conectes a una aplicación previa.
-3. En **Configuración del proyecto**, copiá el **ID de secuencia de comandos**. En tu carpeta local, copiá `.clasp.example.json` como `.clasp.json` y reemplazá el marcador `scriptId` por ese identificador. Este ID corresponde al proyecto, no a una planilla: la planilla se crea después, automáticamente.
-4. Instalá y autorizá clasp con esa misma cuenta. Activá la API de Apps Script en [la configuración de Apps Script](https://script.google.com/home/usersettings).
+Vas a descargar los archivos, llevarlos a tu cuenta Google y abrir la aplicación. **Dúo creará la planilla al terminar: no la crees antes.**
 
-   ```powershell
-   npm install -g @google/clasp
-   clasp.cmd login
-   clasp.cmd status
-   clasp.cmd push
-   ```
+La guía principal usa **Windows y Visual Studio Code**. Necesitás tu cuenta Google y permiso para instalar programas en la computadora. Usá la misma cuenta Google durante todos los pasos. Si es una cuenta del trabajo o de estudio, su organización podría limitar Apps Script.
 
-   En macOS/Linux usá `clasp` en lugar de `clasp.cmd`. Revisá que el proyecto vinculado sea el nuevo antes de hacer `push`. La instalación global agrega la herramienta a tu computadora; la autorización se guarda localmente, fuera del repositorio.
+### 1. Prepará la computadora
 
-5. En el editor web, abrí **Configuración del proyecto → Propiedades de la secuencia de comandos**. Agregá `DUO_ADMIN_EMAIL` con tu correo Google exacto como valor. Esto autoriza la configuración inicial únicamente a tu cuenta. No es una contraseña ni se publica en el repositorio. No copies propiedades de otra instalación.
-6. Elegí **Implementar → Nueva implementación → Aplicación web**. Configurá **Ejecutar como: Usuario que accede a la aplicación web** y acceso para **usuarios con cuenta Google**. No uses acceso anónimo ni ejecución como propietario. El código verifica además la pertenencia al hogar en cada operación de datos.
-7. Abrí el enlace terminado en `/exec` con tu cuenta administradora y autorizá los permisos de identidad y Sheets. Si tenés varias cuentas abiertas, usá un perfil de navegador separado para evitar confusiones.
-8. En la bienvenida, revisá el nombre sugerido **Dúo — Mi hogar**, ingresá tu nombre y el de la otra persona y tocá **Crear mi espacio**. Se creará una planilla en tu cuenta con Movimientos, GastosFijos, Patrimonio y Transferencias. No tenés que crearla ni pegar su identificador.
+**Dónde: en tu navegador.**
 
-Al volver a entrar se reutiliza la configuración existente. Los nombres se muestran como texto, sin ejecutar HTML. No cambies manualmente los identificadores `persona1` y `persona2` una vez que tengas movimientos.
+Instalá estos dos programas si todavía no los tenés:
 
-Referencias: [clasp](https://developers.google.com/apps-script/guides/clasp), [implementación de aplicaciones web](https://developers.google.com/apps-script/guides/web).
+- [Node.js](https://nodejs.org/en/download): elegí la versión marcada **LTS** y el instalador para Windows. Incluye npm, que usaremos más adelante.
+- [Visual Studio Code](https://code.visualstudio.com/download): elegí Windows e instalalo. Es el programa donde abriremos los archivos y ejecutaremos los comandos.
+
+Cuando termines, cerrá y volvé a abrir Visual Studio Code para que reconozca Node.js.
+
+**Listo cuando:** podés abrir Visual Studio Code. Para seguir esta guía mediante ZIP no necesitás instalar Git ni iniciar sesión en GitHub.
+
+### 2. Descargá y abrí los archivos de Dúo
+
+**Dónde: primero en GitHub; después en Visual Studio Code.**
+
+1. En la página de este repositorio, tocá el botón **Code → Download ZIP**.
+2. En Descargas, hacé clic derecho sobre el ZIP y elegí **Extraer todo**. Abrí la carpeta extraída.
+3. En Visual Studio Code, elegí **File → Open Folder** / **Archivo → Abrir carpeta**.
+4. Seleccioná la carpeta que contiene `README.md`, `.clasp.example.json` y `src`. Puede estar dentro de otra carpeta con el mismo nombre.
+
+**Listo cuando:** ves esos archivos en la columna izquierda de VS Code. Trabajá con la carpeta extraída, no dentro del ZIP.
+
+### 3. Creá tu proyecto en Google
+
+**Dónde: en el navegador.**
+
+1. Abrí [Google Apps Script](https://script.google.com/). Es el servicio que alojará tu aplicación.
+2. Revisá la foto de perfil arriba a la derecha: debe ser la cuenta donde querés guardar tus datos.
+3. Tocá **Nuevo proyecto**.
+4. Cambiá «Proyecto sin título» por **Dúo — Mi hogar**.
+5. Entrá al engranaje **Configuración del proyecto**.
+6. Buscá **ID de secuencia de comandos** / **Script ID** y copialo.
+
+**Listo cuando:** tenés un proyecto nuevo y copiaste su ID. Dejá esta pestaña abierta; volveremos a ella.
+
+### 4. Conectá los archivos con ese proyecto
+
+**Dónde: en Visual Studio Code.**
+
+1. En la columna izquierda, abrí `.clasp.example.json`.
+2. Elegí **File → Save As** / **Archivo → Guardar como**.
+3. Guardalo en la misma carpeta con el nombre exacto **`.clasp.json`**. Conservá el punto inicial y no agregues `.txt`.
+4. En ese archivo nuevo, reemplazá `REEMPLAZAR_POR_EL_ID_DE_TU_PROYECTO` por el ID que copiaste en el paso 3. Conservá las comillas.
+5. Guardá con **Ctrl + S**.
+
+La estructura debe quedar así; donde dice `TU_ID_COPIADO` debe estar el identificador real:
+
+```json
+{
+  "scriptId": "TU_ID_COPIADO",
+  "rootDir": "src"
+}
+```
+
+**Listo cuando:** ves `.clasp.json` junto a `.clasp.example.json`, y el archivo nuevo contiene tu ID. Este paso conecta el proyecto de Apps Script; todavía no hay una planilla.
+
+### 5. Autorizá la herramienta que sube los archivos
+
+**Dónde: en VS Code y, cuando se abra, en el navegador.**
+
+En VS Code elegí **Terminal → New Terminal** / **Terminal → Nueva terminal**. Se abrirá un panel abajo. Seleccioná **PowerShell** si te pide elegir una terminal.
+
+Pegá cada comando en ese panel, presioná **Enter** y esperá a que termine antes de continuar.
+
+Primero comprobá que Node.js esté disponible:
+
+```powershell
+node --version
+```
+
+Debe aparecer una versión que comienza con `v`. Después instalá **clasp**, la herramienta de Google que envía los archivos a Apps Script:
+
+```powershell
+npm.cmd install -g @google/clasp
+```
+
+La instalación agrega clasp a tu computadora. Ahora, en el navegador, abrí [la configuración de Apps Script](https://script.google.com/home/usersettings) con la misma cuenta del paso 3 y activá **API de Google Apps Script**.
+
+Volvé a la terminal y ejecutá:
+
+```powershell
+clasp.cmd login
+```
+
+Se abrirá Google para elegir una cuenta y revisar los permisos. Elegí **la cuenta del paso 3** y completá la autorización. Esto permite que clasp gestione tu proyecto; la autorización para usar Dúo llegará al abrir la aplicación.
+
+**Listo cuando:** la terminal confirma que iniciaste sesión. Si un comando muestra un error, consultá [Si algo no sale como esperabas](#si-algo-no-sale-como-esperabas) antes de continuar.
+
+### 6. Subí Dúo a tu proyecto
+
+**Dónde: en la misma terminal de VS Code.**
+
+Ejecutá:
+
+```powershell
+clasp.cmd status
+```
+
+Debe listar archivos de `src`, como `Index.html`, `Acceso.gs` e `Instalacion.gs`. Este comando solo muestra qué se enviará.
+
+Comprobá que `.clasp.json` tenga el ID del **proyecto nuevo** del paso 3. Después ejecutá:
+
+```powershell
+clasp.cmd push
+```
+
+Si pregunta si querés enviar el manifiesto `appsscript.json`, confirmá con `y` y Enter. El envío reemplaza el contenido del proyecto vinculado, por eso usamos uno nuevo.
+
+Volvé a la pestaña del editor de Apps Script y recargala.
+
+**Listo cuando:** los archivos de Dúo aparecen en el editor de Google. Subirlos todavía no crea el enlace para usar la aplicación.
+
+### 7. Indicá quién administra esta copia
+
+**Dónde: en el editor de Google Apps Script.**
+
+1. Entrá a **Configuración del proyecto**, con el engranaje.
+2. Bajá hasta **Propiedades de la secuencia de comandos** / **Script properties**.
+3. Tocá **Agregar propiedad** y completá:
+
+| Campo | Qué escribir |
+|---|---|
+| Propiedad | `DUO_ADMIN_EMAIL` |
+| Valor | Tu correo Google completo, el mismo usado en los pasos anteriores. |
+
+Guardá las propiedades. No escribas una contraseña.
+
+**Listo cuando:** `DUO_ADMIN_EMAIL` aparece guardado con tu correo. Dúo permitirá que solo esa cuenta complete la primera configuración.
+
+### 8. Creá el enlace de tu aplicación
+
+**Dónde: en el editor de Google Apps Script.**
+
+1. Arriba a la derecha, tocá **Implementar → Nueva implementación**.
+2. En **Seleccionar tipo**, tocá el engranaje y elegí **Aplicación web**. No elijas Biblioteca.
+3. Completá estas opciones:
+
+| Opción | Valor |
+|---|---|
+| Descripción | `Primera versión de Dúo` |
+| Ejecutar como | **Usuario que accede a la aplicación web** |
+| Quién tiene acceso | **Cualquier usuario con una cuenta de Google** |
+
+4. Tocá **Implementar** y completá la autorización si Google la solicita.
+5. Copiá la **URL de la aplicación web**, que termina en `/exec`.
+
+La opción de acceso permite llegar a la pantalla de entrada con Google. Dúo verifica por separado quién puede configurar el hogar o consultar sus datos.
+
+**Listo cuando:** tenés tu enlace terminado en `/exec`. Guardalo en favoritos: ese será el acceso desde la computadora y el celular.
+
+### 9. Creá tu espacio y empezá a usarlo
+
+**Dónde: en tu enlace nuevo de Dúo, desde el navegador.**
+
+1. Abrí el enlace con la cuenta que guardaste en `DUO_ADMIN_EMAIL`.
+2. Si Google pide autorización, revisá y aceptá los permisos de identidad y Sheets. El acceso a Sheets solicitado es amplio: [consultá qué permite](#permisos-y-privacidad).
+3. En la bienvenida, dejá **Dúo — Mi hogar** o elegí otro nombre para tu espacio y su planilla.
+4. Escribí tu nombre y el de la otra persona, usando nombres distintos.
+5. Tocá **Crear mi espacio** y esperá a que termine.
+
+**Listo cuando:** aparece el inicio de Dúo y encontrás la nueva planilla en [Google Drive](https://drive.google.com/) con el nombre que elegiste. Dúo prepara las pestañas y guarda la conexión automáticamente.
+
+Ya podés cargar un gasto desde **Nuevo gasto** y comprobarlo en **Gastos** y **Balance**. Al cerrar y volver a abrir tu enlace, se conserva el espacio: no tenés que repetir la instalación.
+
+## Si algo no sale como esperabas
+
+| Lo que ves | Qué hacer |
+|---|---|
+| `node` o `clasp.cmd` no se reconoce | Cerrá y volvé a abrir VS Code. Para `node`, comprobá el paso 1; para `clasp.cmd`, comprobá que terminó la instalación del paso 5. |
+| No se encuentra `.clasp.json` | Revisá el nombre del archivo y que esté junto al README. Abrí esa carpeta en VS Code y creá una terminal nueva allí. |
+| La API de Apps Script está deshabilitada | Activala desde el enlace del paso 5 con la misma cuenta que usaste en `clasp.cmd login`. Después reintentá `clasp.cmd push`. |
+| Google no puede abrir el archivo o entra con otra cuenta | Usá un perfil de navegador con solo tu cuenta de instalación, o una ventana privada e iniciá sesión con ella. Abrí la URL que termina en `/exec`. |
+| Dúo dice que tu cuenta no tiene acceso | Compará el correo mostrado en Dúo con `DUO_ADMIN_EMAIL`. Corregí y guardá la propiedad si corresponde; después tocá **Volver a comprobar acceso**. |
+| Google indica que la aplicación no está verificada o está bloqueada | Revisá los permisos y la cuenta del proyecto. Algunas instalaciones requieren configuración o verificación adicional de Google; consultá [Permisos y privacidad](#permisos-y-privacidad). Un bloqueo no se resuelve cambiando la aplicación para que se ejecute como su propietario. |
+| La creación anterior no pudo confirmarse | Seguí [la recuperación de la configuración](#si-se-interrumpe-la-primera-configuración). No crees otro proyecto ni borres propiedades para reintentar. |
+
+Los nombres de los menús pueden variar según el idioma de tu cuenta. Si pedís ayuda, compartí el paso y el mensaje de error, sin contraseñas ni tokens.
+
+<details>
+<summary>Si usás macOS/Linux o preferís clonar con Git</summary>
+
+En macOS/Linux, instalá Node.js LTS y VS Code para tu sistema. En los comandos usá `npm` y `clasp` en lugar de `npm.cmd` y `clasp.cmd`. Los pasos en Google son los mismos.
+
+Si ya usás Git, podés reemplazar la descarga del ZIP del paso 2 por:
+
+```sh
+git clone https://github.com/gabimahe/duo-publico.git
+cd duo-publico
+```
+
+Después abrí esa carpeta en VS Code y continuá en el paso 3.
+
+</details>
+
+Referencias oficiales: [terminal de VS Code](https://code.visualstudio.com/docs/terminal/getting-started), [clasp](https://github.com/google/clasp), [aplicaciones web de Apps Script](https://developers.google.com/apps-script/guides/web).
+
 
 ## Acceso compartido opcional
 
