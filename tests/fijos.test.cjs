@@ -25,6 +25,41 @@ function entorno() {
 const fijo = { id: '12345678-1234-1234-1234-123456789012', mes: '2026-09', vencimiento: '2026-09-30', descripcion: 'Alquiler', categoria: 'Alquiler', monto: '$1.000,00' };
 const pago = { id: fijo.id, fecha: '2026-10-01', monto: '$1.100,00', pagador: 'persona2', division: 'mitad' };
 const bien = { id: '32345678-1234-1234-1234-123456789012', modo: 'nuevo', tipo: 'Muebles', estado: 'En uso', descripcion: 'Mesa', monto: '10.000,00', fecha: '2026-10-01', pagador: 'persona1', division: 'mitad', notas: 'Madera' };
+test('pago de un gasto respeta reparto, permite superar deuda neta y conserva cada centavo', () => {
+  const { c, hojas } = entorno();
+  const id = '82345678-1234-1234-1234-123456789012';
+  c.guardarGasto({ ...bien, id, monto: '100.000,00', categoria: 'Otros', categoriaDetalle: 'Hogar', espacio: 'convivencia', division: 'otro', porcentajePersona1: '70' });
+  c.guardarGasto({ ...bien, id: '92345678-1234-1234-1234-123456789012', monto: '20.000,00', categoria: 'Otros', categoriaDetalle: 'Hogar', espacio: 'convivencia', pagador: 'persona2' });
+  assert.equal(c.obtenerBalance('2026-10').total.deuda, 2000000);
+  const t = { id: '72345678-1234-1234-1234-123456789012', movimientoId: id, emisor: 'persona2', monto: '10.000,00', fecha: '2026-10-02' };
+  assert.throws(() => c.guardarTransferencia({ ...t, emisor: 'persona1' }));
+  assert.throws(() => c.guardarTransferencia({ ...t, fecha: '2026-09-30' }));
+  c.guardarTransferencia(t); c.guardarTransferencia(t);
+  assert.equal(c.obtenerBalance('2026-10').pendientes.find(g => g.id === id).pendiente, 2000000);
+  const resto = { ...t, id: '62345678-1234-1234-1234-123456789012', monto: '20.000,00' };
+  assert.throws(() => c.guardarTransferencia({ ...resto, monto: '20.000,01' }));
+  c.guardarTransferencia(resto);
+  const resultado = c.obtenerBalance('2026-10');
+  assert.equal(resultado.total.deudor, 'persona1'); assert.equal(resultado.total.deuda, 1000000);
+  assert.equal(resultado.pendientes.some(g => g.id === id), false);
+  assert.equal(hojas.get('Transferencias').filas.length, 3);
+  assert.throws(() => c.guardarTransferencia({ ...resto, id: '52345678-1234-1234-1234-123456789012', monto: '1,00' }));
+  assert.throws(() => c.guardarTransferencia({ ...t, movimientoId: '' }));
+});
+test('pagos históricos sin vínculo conservan el saldo y migran sin asignarse a gastos', () => {
+  const { c, hojas } = entorno();
+  c.guardarGasto({ ...bien, categoria: 'Otros', categoriaDetalle: 'Hogar', espacio: 'convivencia' });
+  const t = { id: '72345678-1234-1234-1234-123456789012', emisor: 'persona2', monto: '1.000,00', fecha: '2026-10-02' };
+  c.guardarTransferencia(t);
+  const filas = hojas.get('Transferencias').filas;
+  filas.forEach(f => f.pop()); // Esquema histórico de nueve columnas.
+  assert.equal(c.obtenerBalance('2026-10').total.deuda, 400000);
+  assert.equal(c.obtenerBalance('2026-10').pendientes[0].pendiente, 500000);
+  c.guardarTransferencia({ ...t, id: '62345678-1234-1234-1234-123456789012', movimientoId: bien.id });
+  assert.equal(filas[0][9], 'movimientoId');
+  assert.equal(filas[1][9], undefined);
+  assert.equal(c.obtenerBalance('2026-10').pendientes[0].pendiente, 400000);
+});
 test('permite corregir un importe rechazado y confirma reintentos sin duplicar ni cambiar lo guardado', () => {
   const { c, hojas } = entorno();
   const compra = { ...bien, descripcion: 'Estantes para el baño', tipo: 'Otros', monto: '19833.75', division: 'otro', porcentajePersona1: '100' };

@@ -379,10 +379,11 @@
           </div>
           <button id="abrir-pago" type="button" aria-expanded="false" aria-controls="formulario-pago" disabled>Registrar pago</button>
           <div id="formulario-pago" class="panel" hidden>
-          <p class="hint">Registrá un pago que ya hayan hecho. Podés saldar toda la deuda o una parte. Dúo no envía dinero.</p>
+          <p class="hint">Registrá un pago que ya hayan hecho. Elegí un gasto para calcular su pendiente, o un pago al saldo general. Dúo no envía dinero.</p>
           <form id="transferencia">
             <fieldset id="campos-transferencia" disabled>
               <div class="field"><label for="emisor">Quién pagó</label><select id="emisor" name="emisor" required><option value="">Elegí quién pagó</option><option value="persona1" data-etiqueta-persona="persona1" data-destino="si">Persona 1</option><option value="persona2" data-etiqueta-persona="persona2" data-destino="si">Persona 2</option></select></div>
+              <div class="field"><label for="gasto-pago">Qué pagó</label><select id="gasto-pago" name="movimientoId"><option value="">Pago al saldo general</option></select><p id="detalle-gasto-pago" class="hint" aria-live="polite"></p></div>
               <div class="field"><label for="monto-transferencia">Monto · ARS</label><input id="monto-transferencia" name="monto" inputmode="decimal" placeholder="$0,00" maxlength="18" required></div>
               <div class="field"><label for="fecha-transferencia">Fecha del pago</label><input id="fecha-transferencia" name="fecha" type="date" required></div>
               <div class="field"><label for="comentario-transferencia">Comentario (opcional)</label><textarea id="comentario-transferencia" name="comentario" maxlength="500" rows="2"></textarea></div>
@@ -541,6 +542,7 @@
       let consultaBalance = 0;
       let solicitudTransferencia = null;
       let guardandoTransferencia = false;
+      let pendientesPago = [], saldoPago = null;
       const formularioTransferencia = document.getElementById('transferencia');
       const camposTransferencia = document.getElementById('campos-transferencia');
       let nombresPersonas = { persona1: 'Persona 1', persona2: 'Persona 2' };
@@ -582,6 +584,8 @@
           contenido.hidden = false; estado.textContent = '';
           document.getElementById('detalles-balance').hidden = false;
           const total = resultado.total;
+          saldoPago = total; pendientesPago = resultado.pendientes || [];
+          if (!solicitudTransferencia) actualizarGastosPago();
           document.getElementById('quien-debe').textContent = total.deudor ? nombrePersona(total.deudor) + ' le debe a ' + nombrePersona(total.acreedor) : 'Están a mano. No hay deuda pendiente.';
           document.getElementById('importe-deuda').textContent = formatearMoneda(total.deuda / 100);
           mostrarPersonas('personas-total', total, false); mostrarPersonas('personas-mes', resultado.mes, true);
@@ -591,10 +595,11 @@
             const tarjeta = texto('li', '', 'movimiento');
             tarjeta.append(texto('h2', nombrePersona(t.emisorId) + ' → ' + nombrePersona(t.receptorId)), texto('p', formatearMoneda(t.montoCentavos / 100) + ' · ' + String(t.fecha).split('-').reverse().join('/')));
             if (t.comentario) tarjeta.append(texto('p', t.comentario, 'comentario'));
+            tarjeta.append(texto('p', t.movimientoId ? 'Gasto: ' + t.gastoDescripcion : 'Pago al saldo general', 'hint'));
             lista.append(tarjeta);
           });
           // Permitir reintentar una solicitud incierta aun si su primer envío saldó la deuda.
-          camposTransferencia.disabled = guardandoTransferencia || (!total.deuda && !solicitudTransferencia);
+          camposTransferencia.disabled = guardandoTransferencia || (!total.deuda && !pendientesPago.length && !solicitudTransferencia);
           document.getElementById('abrir-pago').disabled = camposTransferencia.disabled;
         }).withFailureHandler(error => {
           if (consulta !== consultaBalance) return;
@@ -602,6 +607,24 @@
         }).obtenerBalance(mes);
       }
       document.getElementById('actualizar-balance').addEventListener('click', cargarBalance);
+      function actualizarGastosPago() {
+        const selector = formularioTransferencia.elements.movimientoId;
+        const anterior = selector.value;
+        selector.replaceChildren(new Option('Pago al saldo general', ''));
+        pendientesPago.filter(g => g.deudor === formularioTransferencia.elements.emisor.value).forEach(g => selector.add(new Option(g.descripcion + ' · ' + g.fecha.split('-').reverse().join('/') + ' · ' + formatearMoneda(g.pendiente / 100), g.id)));
+        if (Array.from(selector.options).some(o => o.value === anterior)) selector.value = anterior;
+        sugerirPago();
+      }
+      function sugerirPago() {
+        const gasto = pendientesPago.find(g => g.id === formularioTransferencia.elements.movimientoId.value);
+        const importe = gasto ? gasto.pendiente : saldoPago && saldoPago.deudor === formularioTransferencia.elements.emisor.value ? saldoPago.deuda : 0;
+        formularioTransferencia.elements.monto.value = importe ? formatearMoneda(importe / 100) : '';
+        document.getElementById('detalle-gasto-pago').textContent = gasto
+          ? 'Su parte (' + gasto.porcentaje + ' %): ' + formatearMoneda(gasto.parte / 100) + '. Pagado para este gasto: ' + formatearMoneda(gasto.pagado / 100) + '. Pendiente: ' + formatearMoneda(gasto.pendiente / 100) + '. Podés registrar un importe menor. Los pagos generales no se asignan a este gasto; pagar su parte completa puede cambiar quién debe en el balance.'
+          : 'Los pagos generales descuentan la deuda neta, sin asignarse a un gasto. Elegí quién pagó para ver el importe sugerido.';
+      }
+      formularioTransferencia.elements.emisor.addEventListener('change', actualizarGastosPago);
+      formularioTransferencia.elements.movimientoId.addEventListener('change', sugerirPago);
       document.getElementById('mes-balance').addEventListener('change', cargarBalance);
       function cerrarPago() {
         document.getElementById('formulario-pago').hidden = true;
@@ -616,8 +639,6 @@
         document.getElementById('abrir-pago').textContent = 'Cerrar formulario';
         formularioTransferencia.elements.emisor.focus();
       });
-      formularioTransferencia.addEventListener('input', () => { solicitudTransferencia = null; });
-      formularioTransferencia.addEventListener('change', () => { solicitudTransferencia = null; });
       formularioTransferencia.elements.monto.addEventListener('blur', () => {
         const valor = formularioTransferencia.elements.monto.value.trim().replace(/^\$\s*/, '');
         if (/^(?:\d{1,9}|\d{1,3}(?:\.\d{3}){1,2})(?:,\d{1,2})?$/.test(valor)) formularioTransferencia.elements.monto.value = formatearMoneda(Number(valor.replace(/\./g, '').replace(',', '.')));
@@ -625,7 +646,7 @@
       formularioTransferencia.addEventListener('submit', evento => {
         evento.preventDefault();
         if (guardandoTransferencia || camposTransferencia.disabled) return;
-        if (!solicitudTransferencia) solicitudTransferencia = Object.assign(Object.fromEntries(new FormData(formularioTransferencia)), { id: crypto.randomUUID() });
+        solicitudTransferencia = Object.assign(Object.fromEntries(new FormData(formularioTransferencia)), { id: solicitudTransferencia ? solicitudTransferencia.id : crypto.randomUUID() });
         guardandoTransferencia = true; camposTransferencia.disabled = true;
         document.getElementById('abrir-pago').disabled = true;
         ++consultaBalance;

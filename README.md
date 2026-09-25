@@ -259,3 +259,9 @@ node --test
 Los tests usan servicios simulados y no escriben datos reales. Antes de usar esta versión con datos importantes, probá en tu instalación: crear el espacio, recargar sin crear otra planilla, guardar un gasto, consultar su balance y, si corresponde, invitar a la segunda cuenta. La autorización real de Google no puede comprobarse con tests locales.
 
 Para actualizar, respaldá tu planilla, revisá los cambios y sincronizá con `clasp.cmd push`. Luego editá tu implementación para usar una versión nueva. No reemplaces tus propiedades ni tu `.clasp.json` con las de otro proyecto. Las personalizaciones pueden requerir resolver conflictos al incorporar actualizaciones. Esta base usa un esquema independiente y no migra automáticamente otras versiones de Dúo.
+
+## Pagar un gasto específico
+
+En Balance → Registrar pago, elegí quién pagó y el gasto. Dúo sugiere el pendiente calculado con el reparto original, descontando pagos ya asociados. Podés registrar un importe menor. Un pago a un gasto puede superar la deuda neta y cambiar quién le debe a quién. Los pagos generales (incluidos los históricos) siguen afectando el balance, pero no se asignan automáticamente a gastos. Solo registrá pagos que realmente ocurrieron.
+
+La hoja Transferencias agrega movimientoId al final al guardar el primer pago de esta versión. Se conservan las filas anteriores. Respaldá la planilla antes de actualizar.

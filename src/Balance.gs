@@ -1,4 +1,21 @@
-const COLUMNAS_TRANSFERENCIAS = ['id', 'creadoEn', 'fecha', 'emisorId', 'receptorId', 'espacioId', 'moneda', 'montoCentavos', 'comentario'];
+const COLUMNAS_TRANSFERENCIAS = ['id', 'creadoEn', 'fecha', 'emisorId', 'receptorId', 'espacioId', 'moneda', 'montoCentavos', 'comentario', 'movimientoId'];
+
+function pendientesPorGasto_(gastos, pagos) {
+  calcularBalance_(gastos, pagos);
+  const pendientes = gastos.filter(g => g.id).map(g => {
+    const deudor = g.pagadorId === 'persona1' ? 'persona2' : 'persona1';
+    const parte = deudor === 'persona1' ? g.persona1Centavos : g.persona2Centavos;
+    return { id: g.id, descripcion: g.descripcion, fecha: g.fecha, deudor, acreedor: g.pagadorId, parte, pagado: 0, pendiente: parte, porcentaje: deudor === 'persona1' ? g.persona1Porcentaje : g.persona2Porcentaje };
+  });
+  const porId = new Map(pendientes.map(g => [g.id, g]));
+  pagos.filter(p => p.movimientoId).forEach(p => {
+    const g = porId.get(p.movimientoId);
+    if (!g || p.emisorId !== g.deudor || p.receptorId !== g.acreedor) throw new Error('Hay un pago vinculado a un gasto inválido. Revisá los pagos.');
+    g.pagado += p.montoCentavos; g.pendiente -= p.montoCentavos;
+    if (g.pendiente < 0) throw new Error('Los pagos de un gasto superan la parte correspondiente. Revisá los pagos.');
+  });
+  return pendientes.filter(g => g.pendiente > 0);
+}
 
 function calcularBalance_(gastos, transferencias) {
   const resultado = { persona1: { pagado: 0, corresponde: 0, enviado: 0, recibido: 0 }, persona2: { pagado: 0, corresponde: 0, enviado: 0, recibido: 0 }, cantidadGastos: gastos.length };
@@ -28,13 +45,14 @@ function calcularBalance_(gastos, transferencias) {
 function leerTransferencias_(hoja) {
   if (!hoja || hoja.getLastRow() === 0) return [];
   const datos = hoja.getDataRange().getValues();
-  if (!COLUMNAS_TRANSFERENCIAS.every((nombre, i) => datos[0][i] === nombre)) throw new Error('Revisá las cabeceras de Transferencias.');
+  if (!COLUMNAS_TRANSFERENCIAS.slice(0, 9).every((nombre, i) => datos[0][i] === nombre) || (datos[0][9] && datos[0][9] !== 'movimientoId')) throw new Error('Revisá las cabeceras de Transferencias.');
   return datos.slice(1).filter(fila => fila[0] && fila[5] === 'convivencia').map(fila => {
     const t = {};
     COLUMNAS_TRANSFERENCIAS.forEach((nombre, i) => {
       const valor = fila[i];
       t[nombre] = valor instanceof Date ? (nombre === 'fecha' ? Utilities.formatDate(valor, 'America/Argentina/Buenos_Aires', 'yyyy-MM-dd') : valor.toISOString()) : valor;
     });
+    t.movimientoId = t.movimientoId || '';
     return t;
   }).sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || String(b.creadoEn).localeCompare(String(a.creadoEn)));
 }
@@ -54,7 +72,7 @@ function obtenerBalance(mes) {
     const id = PropertiesService.getScriptProperties().getProperty('DUO_SPREADSHEET_ID');
     const datos = id ? leerDatosBalance_(SpreadsheetApp.openById(id)) : { gastos: [], transferencias: [] };
     const delMes = valores => valores.filter(valor => String(valor.fecha).slice(0, 7) === mes);
-    return { total: calcularBalance_(datos.gastos, datos.transferencias), mes: calcularBalance_(delMes(datos.gastos), delMes(datos.transferencias)), transferencias: delMes(datos.transferencias) };
+    return { total: calcularBalance_(datos.gastos, datos.transferencias), mes: calcularBalance_(delMes(datos.gastos), delMes(datos.transferencias)), pendientes: pendientesPorGasto_(datos.gastos, datos.transferencias), transferencias: delMes(datos.transferencias).map(t => Object.assign({}, t, { gastoDescripcion: datos.gastos.find(g => g.id === t.movimientoId)?.descripcion || '' })) };
   } finally { lock.releaseLock(); }
 }
 
@@ -64,7 +82,9 @@ function validarTransferencia_(dato) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dato.fecha || '') || !Number.isFinite(Date.parse(dato.fecha)) || new Date(dato.fecha).toISOString().slice(0, 10) !== dato.fecha) throw new Error('Ingresá una fecha válida.');
   const comentario = String(dato.comentario || '').trim();
   if (comentario.length > 500) throw new Error('El comentario admite hasta 500 caracteres.');
-  return { id: dato.id, fecha: dato.fecha, emisorId: dato.emisor, receptorId: dato.emisor === 'persona1' ? 'persona2' : 'persona1', montoCentavos: montoCentavos_(dato.monto), comentario };
+  const movimientoId = String(dato.movimientoId || '');
+  if (movimientoId && !/^[a-zA-Z0-9-]{16,80}$/.test(movimientoId)) throw new Error('Seleccioná un gasto válido.');
+  return { id: dato.id, fecha: dato.fecha, emisorId: dato.emisor, receptorId: dato.emisor === 'persona1' ? 'persona2' : 'persona1', montoCentavos: montoCentavos_(dato.monto), comentario, movimientoId };
 }
 
 function guardarTransferencia(dato) {
@@ -80,16 +100,21 @@ function guardarTransferencia(dato) {
     // Comprobar el reintento antes de validar el saldo que ya pudo cambiar por este pago.
     const anterior = datos.transferencias.find(fila => fila.id === t.id);
     if (anterior) {
-      if (anterior.emisorId !== t.emisorId || anterior.montoCentavos !== t.montoCentavos || anterior.fecha !== t.fecha) throw new Error('Este identificador ya corresponde a otro pago.');
+      if (anterior.emisorId !== t.emisorId || anterior.montoCentavos !== t.montoCentavos || anterior.fecha !== t.fecha || (anterior.movimientoId || '') !== t.movimientoId) throw new Error('Este identificador ya corresponde a otro pago. Actualizá el balance para comprobar el pago original.');
       return { id: t.id };
     }
     const balance = calcularBalance_(datos.gastos, datos.transferencias);
-    if (balance.deudor !== t.emisorId || t.montoCentavos > balance.deuda) throw new Error('El saldo cambió o el pago supera la deuda pendiente. Actualizá el balance y revisá el importe y quién pagó.');
+    if (t.movimientoId) {
+      const gasto = pendientesPorGasto_(datos.gastos, datos.transferencias).find(g => g.id === t.movimientoId);
+      if (!gasto || gasto.deudor !== t.emisorId || t.montoCentavos > gasto.pendiente) throw new Error('El pago supera el pendiente del gasto o corresponde a otra persona. Actualizá el balance.');
+      if (t.fecha < gasto.fecha) throw new Error('La fecha del pago no puede ser anterior al gasto.');
+    } else if (balance.deudor !== t.emisorId || t.montoCentavos > balance.deuda) throw new Error('El saldo cambió o el pago supera la deuda pendiente. Actualizá el balance y revisá el importe y quién pagó.');
     let hoja = libro.getSheetByName('Transferencias');
     if (!hoja) hoja = libro.insertSheet('Transferencias');
     if (!hoja.getLastRow()) { hoja.getRange(1, 1, 1, COLUMNAS_TRANSFERENCIAS.length).setValues([COLUMNAS_TRANSFERENCIAS]); hoja.setFrozenRows(1); }
+    else if (hoja.getRange(1, 10, 1, 1).getValues()[0][0] !== 'movimientoId') hoja.getRange(1, 10, 1, 1).setValues([['movimientoId']]);
     const comentario = /^[=+@\-']/.test(t.comentario) ? "'" + t.comentario : t.comentario;
-    hoja.getRange(hoja.getLastRow() + 1, 1, 1, COLUMNAS_TRANSFERENCIAS.length).setValues([[t.id, new Date().toISOString(), t.fecha, t.emisorId, t.receptorId, 'convivencia', 'ARS', t.montoCentavos, comentario]]);
+    hoja.getRange(hoja.getLastRow() + 1, 1, 1, COLUMNAS_TRANSFERENCIAS.length).setValues([[t.id, new Date().toISOString(), t.fecha, t.emisorId, t.receptorId, 'convivencia', 'ARS', t.montoCentavos, comentario, t.movimientoId]]);
     SpreadsheetApp.flush();
     return { id: t.id };
   } finally { lock.releaseLock(); }
