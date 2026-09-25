@@ -24,7 +24,7 @@
       main { padding-top: 32px; }
       h1 { font-size: clamp(32px, 6vw, 44px); }
       form { max-width: 600px; }
-      .field { display: grid; gap: 8px; margin-bottom: 20px; }
+      .field { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 8px; margin-bottom: 20px; }
       input, select, textarea, button { font: inherit; min-height: 48px; border-radius: 12px; }
       input, select, textarea { width: 100%; min-width: 0; border: 1px solid #a89ab5; padding: 12px; background: white; color: #34283f; }
       textarea { resize: vertical; }
@@ -128,7 +128,10 @@
       .deudas { gap: 10px; font-size: 14px; margin-bottom: 12px; }
       .acciones-inicio { margin-bottom: 24px; gap: 12px; }
       .filtro { align-items: end; margin-bottom: 20px; }
-      input[type="month"], input[type="date"] { display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; min-inline-size: 0; }
+      /* Limitar también el control nativo de WebKit, no solo su contenedor. */
+      input[type="month"], input[type="date"] { -webkit-appearance: none; appearance: none; display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; inline-size: 100%; min-inline-size: 0; max-inline-size: 100%; }
+      input[type="month"]::-webkit-date-and-time-value, input[type="date"]::-webkit-date-and-time-value { min-width: 0; text-align: left; }
+      input[type="month"]::-webkit-datetime-edit, input[type="date"]::-webkit-datetime-edit { min-width: 0; padding: 0; }
       .filtro label { font-size: 12px; color: #6a5d76; }
       .filtro button, #actualizar-bienes, #actualizar-balance { background: transparent; border: 0; color: #6a5d76; width: auto; font-size: 13px; }
       .movimiento { padding: 18px; border-color: var(--borde); border-radius: 14px; }
